@@ -9,22 +9,24 @@ use sp_std::vec::Vec;
 /// Configure the pallet by specifying the parameters and types on which it depends.
 pub trait Trait: frame_system::Trait {
     /// Because this pallet emits events, it depends on the runtime's definition of an event.
-    type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
+    type Event: From<Event/*<Self>*/> + Into<<Self as frame_system::Trait>::Event>;
 }
 
-type Balance = u128;
+//type Balance = u128;
 
 
 // Pallets use events to inform users when important changes are made.
 // Event documentation should end with an array that provides descriptive names for parameters.
 // https://substrate.dev/docs/en/knowledgebase/runtime/events
 decl_event! {
-    pub enum Event<T> where AccountId = <T as frame_system::Trait>::AccountId {
+    pub enum Event/*<T> where AccountId = <T as frame_system::Trait>::AccountId*/ {
+        /*
         /// Event emitted when a proof has been claimed. [who, claim]
         ClaimCreated(AccountId, Vec<u8>),
         /// Event emitted when a claim is revoked by the owner. [who, claim]
         ClaimRevoked(AccountId, Vec<u8>),
         Deposit(Vec<u8>, u128),
+        */
         PayForUpload(
           Vec<u8>, /* file id */
           Vec<u8>, /* owner */
@@ -53,10 +55,12 @@ decl_error! {
 decl_storage! {
     trait Store for Module<T: Trait> as TemplateModule {
         Key get(fn key) config(): T::AccountId;
+        /*
         /// The storage item for our proofs.
         /// It maps a proof to the user who made the claim and when they made it.
         Proofs: map hasher(blake2_128_concat) Vec<u8> => (T::AccountId, T::BlockNumber);
         Balances: map hasher(blake2_128_concat) Vec<u8> => Balance;
+        */
     }
     /*
     add_extra_genesis {
@@ -80,6 +84,7 @@ decl_module! {
         // Events must be initialized if they are used by the pallet.
         fn deposit_event() = default;
 
+        /*
         /// Allow a user to claim ownership of an unclaimed proof.
         #[weight = 10_000]
         fn create_claim(origin, proof: Vec<u8>) {
@@ -143,12 +148,13 @@ decl_module! {
 
             Self::deposit_event(RawEvent::Deposit(acc, balance));
         }
+        */
 
         #[weight = 10_000]
         // TODO u128 for size?
         fn pay_for_upload(origin, id: Vec<u8>, owner: Vec<u8>, name: Vec<u8>, size_bytes: u128){
           // TODO: check args
-          Self::deposit_event(RawEvent::PayForUpload(id, owner, name, size_bytes));
+          Self::deposit_event(/*Raw*/Event::PayForUpload(id, owner, name, size_bytes));
         }
     }
 }

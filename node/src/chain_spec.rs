@@ -133,6 +133,7 @@ fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 	_enable_println: bool,
 ) -> GenesisConfig {
+  let root_key_clone = root_key.clone();
 	GenesisConfig {
 		frame_system: Some(SystemConfig {
 			// Add Wasm runtime to storage.
@@ -154,7 +155,7 @@ fn testnet_genesis(
 			key: root_key,
 		}),
     pallet_template: Some(TemplateModuleConfig {
-			key: root_key,
+			key: root_key_clone
     })
 	}
 }
