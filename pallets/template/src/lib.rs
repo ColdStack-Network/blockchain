@@ -5,6 +5,9 @@ use frame_support::{
 };
 use frame_system::ensure_signed;
 use sp_std::vec::Vec;
+//TODO remove
+use frame_support::sp_runtime::print;
+use frame_support::debug;
 
 /// Configure the pallet by specifying the parameters and types on which it depends.
 pub trait Trait: frame_system::Trait {
@@ -40,13 +43,16 @@ decl_event! {
 // Errors inform users that something went wrong.
 decl_error! {
     pub enum Error for Module<T: Trait> {
+        /*
         /// The proof has already been claimed.
         ProofAlreadyClaimed,
         /// The proof does not exist, so it cannot be revoked.
         NoSuchProof,
         /// The proof is claimed by another account, so caller can't revoke it.
         NotProofOwner,
-        InsufficientBalance
+        InsufficientBalance,
+        */
+        Unauthorized
     }
 }
 
@@ -153,6 +159,14 @@ decl_module! {
         #[weight = 10_000]
         // TODO u128 for size?
         fn pay_for_upload(origin, id: Vec<u8>, owner: Vec<u8>, name: Vec<u8>, size_bytes: u128){
+          let sender = ensure_signed(origin)?;
+          //ensure!(1 == 2, Error::<T>::Unauthorized);
+          ensure!(sender == Self::key(), Error::<T>::Unauthorized);
+          // TODO verify acc length
+          // TODO: verify sender
+          // print("Key {}");
+          // print(Self::key());
+          //debug::info!("Key {}", Self::key());
           // TODO: check args
           Self::deposit_event(/*Raw*/Event::PayForUpload(id, owner, name, size_bytes));
         }
