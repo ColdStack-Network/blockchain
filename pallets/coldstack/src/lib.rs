@@ -16,7 +16,7 @@ pub trait Trait: frame_system::Trait {
 // The pallet's runtime storage items.
 // https://substrate.dev/docs/en/knowledgebase/runtime/storage
 decl_storage! {
-    trait Store for Module<T: Trait> as TemplateModule {
+    trait Store for Module<T: Trait> as ColdStack {
         Key get(fn key) config(): T::AccountId;
     }
 }
