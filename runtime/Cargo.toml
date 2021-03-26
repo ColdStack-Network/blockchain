@@ -26,7 +26,7 @@ serde = { features = ['derive'], optional = true, version = '1.0.119' }
 
 # local dependencies
 #pallet-coldstack = { path = '../pallets/coldstack', default-features = false, version = '3.0.0' }
-pallet-coldstack = { path = '../../coldstack-pallet', default-features = false, version = '3.0.0' }
+pallet-coldstack = { path = '../../coldstack-pallet2', default-features = false, version = '3.0.0' }
 
 # Substrate dependencies
 frame-benchmarking = { default-features = false, optional = true, version = '3.0.0' }
