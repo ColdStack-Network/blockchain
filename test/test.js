@@ -18,9 +18,6 @@ async function expectFail(promise, string){
     process.exit(1)
   } catch(e){
     if(e.toString() != string){
-      console.log('eq', e.toString() == string)
-      console.log(e.toString(), typeof(e.toString()))
-      console.log(string, typeof(string))
       console.log(`FAIL: expected ${string}, caught ${e.toString()}`)
       process.exit(1)
     }
