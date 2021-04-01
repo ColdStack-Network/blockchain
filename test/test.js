@@ -118,7 +118,7 @@ function assert(cond, message){
         1
       )
     ),
-    'bob upload - coldStack.Unauthorized'
+    'coldStack.Unauthorized'
   )
 
   console.log("bob failed to upload file")
