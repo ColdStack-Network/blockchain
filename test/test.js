@@ -86,6 +86,8 @@ function assert(cond, message){
 
   // Alice can upload file because she is admin
 
+  console.log("initialized")
+
   await expectOk(
     sendTxAndWait(
       alice,
@@ -98,7 +100,10 @@ function assert(cond, message){
     )
   )
 
+  console.log("alice succeed to upload file")
+
   // But Bob cannot
+
 
   await expectFail(
     sendTxAndWait(
@@ -113,6 +118,8 @@ function assert(cond, message){
     'coldStack.Unauthorized'
   )
 
+  console.log("bob failed to upload file")
+
   // Let's grant permission to Bob
 
   await expectOk(
@@ -121,6 +128,8 @@ function assert(cond, message){
       api.tx.coldStack.grantFilePermission(bob.address)
     )
   )
+
+  console.log("alice granted file permission to bob")
 
   // Now Bob can upload too
 
@@ -136,6 +145,7 @@ function assert(cond, message){
     )
   )
 
+  console.log("bob succeed to upload file")
 
   // testAddress has zero balance
 
@@ -151,6 +161,8 @@ function assert(cond, message){
     )
   )
 
+  console.log("alice succeed to deposit 1 token")
+
   // now testAddress has balance eq to 1
 
   assert((await api.query.coldStack.balances(testAddress)).eq(1), 'Unexpected balance')
@@ -165,6 +177,8 @@ function assert(cond, message){
     'coldStack.InsufficientFunds'
   )
 
+  console.log("alice failed to deposit 2 tokens")
+
   // Try to withdraw 1
 
   await expectOk(
@@ -173,6 +187,8 @@ function assert(cond, message){
       api.tx.coldStack.withdraw(testAddress, 1)
     )
   )
+
+  console.log("alice succeeded to withdraw 1 token")
 
   // And get balance back to zero
 
@@ -188,6 +204,8 @@ function assert(cond, message){
     'coldStack.Unauthorized'
   )
 
+  console.log("bob failed to grant permission to himself")
+
   // Bob cannot deposit until given permission
 
   await expectFail(
@@ -198,6 +216,8 @@ function assert(cond, message){
     'coldStack.Unauthorized'
   )
 
+  console.log("bob failed to deposit 1 token")
+
   // Until we give him permission
 
   await expectOk(
@@ -206,6 +226,8 @@ function assert(cond, message){
       api.tx.coldStack.grantBillingPermission(bob.address)
     )
   )
+
+  console.log("alice granted billing permission to bob")
 
   // And now he can deposit too
 
@@ -217,6 +239,7 @@ function assert(cond, message){
     )
   )
 
+  console.log("bob succeed to deposit 1 token")
 
   console.log('Tests passed')
 
