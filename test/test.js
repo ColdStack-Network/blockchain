@@ -154,7 +154,6 @@ function assert(cond, message){
 
   assert((await api.query.coldStack.balances(testAddress)).eq(0), 'Unexpected balance')
 
-
   // Deposit 1 to testAddress
 
   await expectOk(
@@ -234,15 +233,32 @@ function assert(cond, message){
 
   // And now he can deposit too
 
+  await expectOk(
+    sendTxAndWait(
+      bob,
+      api.tx.coldStack.deposit(testAddress, 50)
+    )
+  )
+
+  console.log("bob succeed to deposit tokens")
 
   await expectOk(
     sendTxAndWait(
       bob,
-      api.tx.coldStack.deposit(testAddress, 1)
+      api.tx.coldStack.charge(testAddress, 1)
     )
   )
 
-  console.log("bob succeed to deposit 1 token")
+  console.log("bob was charged 1 token for upload")
+
+  await expectOk(
+    sendTxAndWait(
+      bob,
+      api.tx.coldStack.delete('0x11111111111111111111111111111111')
+    )
+  )
+
+  console.log("bob succeed to delete his file")
 
   console.log('Tests passed')
 
