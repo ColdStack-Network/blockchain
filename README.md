@@ -1,3 +1,22 @@
+# Coldstack Privatechain
+
+## Build docker image
+
+Project imports private repository https://github.com/ColdStack-Network/pallet-coldstack
+To build in docker, you must run ssh agent first, for example like this
+
+```
+ssh-agent bash
+ssh-add
+```
+
+Then
+
+```
+export DOCKER_BUILDKIT=1
+docker build --ssh default -t coldstack .
+```
+
 # Substrate Node Template
 
 A fresh FRAME-based [Substrate](https://www.substrate.io/) node, ready for hacking :rocket:
