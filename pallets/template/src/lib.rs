@@ -37,7 +37,7 @@ pub mod pallet {
   pub type Key<T: Config> = StorageValue<_, T::AccountId>;
 
 	#[pallet::storage]
-	pub type Account<T: Config> = StorageMap<
+	pub type Balances<T: Config> = StorageMap<
 		_,
 		Blake2_128Concat,
 		Vec<u8>,
@@ -91,11 +91,41 @@ pub mod pallet {
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
 
+
+
+
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
 	// These functions materialize as "extrinsics", which are often compared to transactions.
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
+
+		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		pub fn deposit(origin: OriginFor<T>, 
+      owner: Vec<u8>,
+      value: u128
+    ) -> DispatchResultWithPostInfo {
+			let who = ensure_signed(origin)?;
+      match <Key<T>>::get() {
+        None => Err(Error::<T>::Unauthorized)?,
+        Some(key) => {
+          if who != key {
+            return Err(Error::<T>::Unauthorized)?;
+          }
+          let existed = Balances::<T>::contains_key(&owner);
+          if existed {
+            let current = Balances::<T>::get(&owner); 
+            Balances::<T>::insert(owner, current + value); 
+          } else {
+            Balances::<T>::insert(owner, value); 
+          }
+
+          // Return a successful DispatchResultWithPostInfo
+          Ok(().into())
+        }
+      }
+    }
+
 		/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
