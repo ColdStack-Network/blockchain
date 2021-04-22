@@ -1,4 +1,5 @@
 const {ApiPromise, RPCProvider, WsProvider, Keyring} = require('@polkadot/api');
+const crypto = require('crypto')
 
 const NODE_URL= process.env.NODE_URL;
 
@@ -82,6 +83,16 @@ function assert(cond, message){
     })
   }
 
+  function upload(){
+    return api.tx.coldStack.upload(
+      /*bucket_name_hash:*/   crypto.createHash('sha256').update("1").digest('hex'),
+      /*file_contents_hash:*/ crypto.createHash('sha256').update("2").digest('hex'),
+      /*file_name_hash:*/     crypto.createHash('sha256').update("3").digest('hex'),
+      /*file_size_bytes:  */  10,
+      /*gateway_eth_address:*/'0x2222222222222222222222222222222222222222',
+    )
+  }
+
   const testAddress = '0x1111111111111111111111111111111111111111'
 
   // Alice can upload file because she is admin
@@ -91,12 +102,7 @@ function assert(cond, message){
   await expectOk(
     sendTxAndWait(
       alice,
-      api.tx.coldStack.upload(
-        testAddress,
-        '0x11111111111111111111111111111111',
-        '0x22222222222222222222222222222222',
-        1
-      )
+      upload()
     )
   )
 
@@ -108,12 +114,7 @@ function assert(cond, message){
   await expectFail(
     sendTxAndWait(
       bob,
-      api.tx.coldStack.upload(
-        testAddress,
-        '0x11111111111111111111111111111111',
-        '0x22222222222222222222222222222222',
-        1
-      )
+      upload()
     ),
     'coldStack.Unauthorized'
   )
@@ -136,12 +137,7 @@ function assert(cond, message){
   await expectOk(
     sendTxAndWait(
       bob,
-      api.tx.coldStack.upload(
-        testAddress,
-        '0x11111111111111111111111111111111',
-        '0x22222222222222222222222222222222',
-        1
-      )
+      upload()
     )
   )
 
