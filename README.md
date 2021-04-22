@@ -14,7 +14,37 @@ Then
 
 ```
 export DOCKER_BUILDKIT=1
-docker build --ssh default -t coldstack .
+docker build --ssh default -t privatechain .
+```
+
+## Push docker image
+
+```
+docker tag privatechain coldstack/privatechain:latest
+docker push coldstack/privatechain
+```
+
+## Run docker image
+
+Run in dev mode
+
+```
+docker run coldstack/privatechain coldstack --dev --ws-external
+```
+
+Run with volume:
+
+```
+# Set permissions
+chown 1000.1000 /your/host/directory -R
+
+# Run
+docker run -v /your/host/directory:/data coldstack/privatechain coldstack --dev --ws-external
+```
+
+Expose web service port:
+```
+docker run -p 9944:9944 coldstack/privatechain coldstack --dev --ws-external
 ```
 
 # Substrate Node Template
