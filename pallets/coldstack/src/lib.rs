@@ -48,7 +48,7 @@ decl_module! {
         // Events must be initialized if they are used by the pallet.
         fn deposit_event() = default;
 
-        #[weight = (10_000, DispatchClass::Normal, Pays::No)]
+        #[weight = (0, DispatchClass::Normal, Pays::No)]
         fn upload(origin, 
           bucket_name_hash: Vec<u8>,
           file_contents_hash: Vec<u8>,
@@ -85,7 +85,7 @@ decl_module! {
           ));
         }
 
-        #[weight = (10_000, DispatchClass::Normal, Pays::No)]
+        #[weight = (0, DispatchClass::Normal, Pays::No)]
         fn delete(origin, name_hash: Vec<u8>) {
           ensure_signed(origin)?;
 
@@ -102,7 +102,7 @@ decl_module! {
           Self::deposit_event(RawEvent::Delete(name_hash));
         }
 
-        #[weight = (10_000, DispatchClass::Normal, Pays::No)]
+        #[weight = (0, DispatchClass::Normal, Pays::No)]
         fn deposit(origin, account: Vec<u8>, value: u128){
           let sender = ensure_signed(origin)?;
 
@@ -127,7 +127,7 @@ decl_module! {
           }
         }
 
-        #[weight = (10_000, DispatchClass::Normal, Pays::No)]
+        #[weight = (0, DispatchClass::Normal, Pays::No)]
         fn withdraw(origin, account: Vec<u8>, value: u128){
           let sender = ensure_signed(origin)?;
 
@@ -148,7 +148,7 @@ decl_module! {
           Balances::insert(&account, next_balance);
         }
 
-        #[weight = (10_000, DispatchClass::Normal, Pays::No)]
+        #[weight = (0, DispatchClass::Normal, Pays::No)]
         fn grant_file_permission(origin, account_id: T::AccountId){
           let sender = ensure_signed(origin)?;
           ensure!(sender == Self::key(), Error::<T>::Unauthorized);
@@ -156,7 +156,7 @@ decl_module! {
           Self::deposit_event(RawEvent::FilePermissionGranted(account_id));
         }
 
-        #[weight = (10_000, DispatchClass::Normal, Pays::No)]
+        #[weight = (0, DispatchClass::Normal, Pays::No)]
         fn grant_billing_permission(origin, account_id: T::AccountId){
           let sender = ensure_signed(origin)?;
           ensure!(sender == Self::key(), Error::<T>::Unauthorized);
@@ -164,7 +164,7 @@ decl_module! {
           Self::deposit_event(RawEvent::BillingPermissionGranted(account_id));
         }
 
-        #[weight = (10_000, DispatchClass::Normal, Pays::No)]
+        #[weight = (0, DispatchClass::Normal, Pays::No)]
         fn revoke_file_permission(origin, account_id: T::AccountId){
           let sender = ensure_signed(origin)?;
           ensure!(sender == Self::key(), Error::<T>::Unauthorized);
@@ -174,7 +174,7 @@ decl_module! {
           Self::deposit_event(RawEvent::FilePermissionRevoked(account_id));
         }
 
-        #[weight = (10_000, DispatchClass::Normal, Pays::No)]
+        #[weight = (0, DispatchClass::Normal, Pays::No)]
         fn revoke_billing_permission(origin, account_id: T::AccountId){
           let sender = ensure_signed(origin)?;
           ensure!(sender == Self::key(), Error::<T>::Unauthorized);
