@@ -1,20 +1,20 @@
 # Coldstack Privatechain
 
+## Build
+
+To setup rust, see instructions below.
+
+To build:
+
+```
+cargo build --release
+
+```
+
 ## Build docker image
 
-Project imports private repository https://github.com/ColdStack-Network/pallet-coldstack
-To build in docker, you must run ssh agent first, for example like this
-
 ```
-ssh-agent bash
-ssh-add
-```
-
-Then
-
-```
-export DOCKER_BUILDKIT=1
-docker build --ssh default -t privatechain .
+docker build -t privatechain .
 ```
 
 ## Push docker image
@@ -46,6 +46,15 @@ Expose web service port:
 ```
 docker run -p 9944:9944 coldstack/privatechain coldstack --dev --ws-external
 ```
+
+## Run tests
+
+First build and then
+
+```
+./test/test.sh
+```
+
 
 # Substrate Node Template
 

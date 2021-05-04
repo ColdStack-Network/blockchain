@@ -22,8 +22,7 @@ version = '2.0.0'
 
 [dependencies.pallet-coldstack]
 default_features = false
-git = 'ssh://git@github.com/ColdStack-Network/pallet-coldstack.git'
-branch = 'master'
+path = '../pallets/coldstack'
 
 [dependencies]
 hex-literal = { optional = true, version = '0.3.1' }
