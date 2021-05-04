@@ -68,10 +68,9 @@ decl_module! {
 
           ensure!(gateway_eth_address.len() == 20, Error::<T>::InvalidArguments);
 
-          /* We expect hash to be at least16 bytes long here */
-          ensure!(bucket_name_hash.len() >= 16, Error::<T>::InvalidArguments);
-          ensure!(file_contents_hash.len() >= 16, Error::<T>::InvalidArguments);
-          ensure!(file_name_hash.len() >= 16, Error::<T>::InvalidArguments);
+          ensure!(bucket_name_hash.len() == 32, Error::<T>::InvalidArguments);
+          ensure!(file_contents_hash.len() == 32, Error::<T>::InvalidArguments);
+          ensure!(file_name_hash.len() == 32, Error::<T>::InvalidArguments);
 
 			    <TotalFileCount>::put(Self::total_file_count() + 1);
 			    <TotalFileSize>::put(Self::total_file_size() + file_size_bytes);
@@ -90,7 +89,7 @@ decl_module! {
           ensure_signed(origin)?;
 
           ensure!(bucket_name_hash.len() == 32, Error::<T>::InvalidArguments);
-          ensure!(file_contents_hash.len() == 32, Error::<T>::InvalidArguments);
+          ensure!(file_name_hash.len() == 32, Error::<T>::InvalidArguments);
 
           Self::deposit_event(RawEvent::Delete(bucket_name_hash, file_name_hash));
         }
