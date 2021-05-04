@@ -10,7 +10,7 @@ async function expectOk(promise){
     await promise
   } catch(e){
     console.log('FAIL: Caught error', e.toString())
-    process.exit(1)
+    throw e
   }
 }
 
@@ -53,11 +53,7 @@ function assert(cond, message){
   async function sendTxAndWait(account, tx){
     return new Promise(async (resolve, reject) => {
       const unsub = await tx.signAndSend(account, (result) => {
-        //if (result.status.isFinalized) {
-          //console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
-        //}
         if (result.status.isInBlock) {
-          //console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
           let rejected = false
           result.events
           .filter(({event}) =>
@@ -75,7 +71,6 @@ function assert(cond, message){
             }
             rejected = true
           })
-          //console.log('events', result.events.map(e => JSON.stringify(e.event)))
           unsub();
           if(!rejected){
             resolve(result)
@@ -85,13 +80,17 @@ function assert(cond, message){
     })
   }
 
-  const FILE_SIZE = 10
+  const FILE_CONTENTS = "loremipsum"
+  const FILE_SIZE = FILE_CONTENTS.length
+  const BUCKET_NAME_HASH = '0x' + crypto.createHash('sha256').update("my_bucket").digest('hex')
 
+  let uploadNumber = 0
   function upload(){
+    const number = (uploadNumber++).toString()
     return api.tx.coldStack.upload(
-      /*bucket_name_hash:*/   crypto.createHash('sha256').update("1").digest('hex'),
-      /*file_contents_hash:*/ crypto.createHash('sha256').update("2").digest('hex'),
-      /*file_name_hash:*/     crypto.createHash('sha256').update("3").digest('hex'),
+      /*bucket_name_hash:*/   BUCKET_NAME_HASH, 
+      /*file_contents_hash:*/ '0x' + crypto.createHash('sha256').update(FILE_CONTENTS).digest('hex'),
+      /*file_name_hash:*/     '0x' + crypto.createHash('sha256').update(number).digest('hex'),
       /*file_size_bytes:  */  FILE_SIZE,
       /*gateway_eth_address:*/'0x2222222222222222222222222222222222222222',
     )
@@ -248,7 +247,10 @@ function assert(cond, message){
   await expectOk(
     sendTxAndWait(
       bob,
-      api.tx.coldStack.delete('0x11111111111111111111111111111111')
+      api.tx.coldStack.delete(
+      /*bucket_name_hash*/ BUCKET_NAME_HASH,
+      /*file_name_hash :*/ '0x' + crypto.createHash('sha256').update("0").digest('hex'),
+      )
     )
   )
 
