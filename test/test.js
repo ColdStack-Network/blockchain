@@ -240,15 +240,6 @@ function assert(cond, message){
   await expectOk(
     sendTxAndWait(
       bob,
-      api.tx.coldStack.charge(testAddress, 1)
-    )
-  )
-
-  console.log("bob was charged 1 token for upload")
-
-  await expectOk(
-    sendTxAndWait(
-      bob,
       api.tx.coldStack.delete('0x11111111111111111111111111111111')
     )
   )

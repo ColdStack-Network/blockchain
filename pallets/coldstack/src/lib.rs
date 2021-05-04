@@ -85,19 +85,6 @@ decl_module! {
         }
 
         #[weight = (10_000, DispatchClass::Normal, Pays::No)]
-        fn charge(origin, account: Vec<u8>, value: u128) {
-          ensure_signed(origin)?;
-
-          // TODO what if balance not exists
-          let balance = Balances::get(&account);
-
-          // TODO fix overflow
-          let next_balance = balance - value;
-
-          Balances::insert(account, next_balance);
-        }
-
-        #[weight = (10_000, DispatchClass::Normal, Pays::No)]
         fn deposit(origin, account: Vec<u8>, value: u128){
           let sender = ensure_signed(origin)?;
 
@@ -195,7 +182,6 @@ decl_event! {
           /*gateway_eth_address:*/ Vec<u8>,
         ),
         Delete(Vec<u8>,),
-        Charge(Vec<u8>, u128),
         Deposit(Vec<u8>, u128),
         Withdraw(Vec<u8>, u128),
         FilePermissionGranted(AccountId),
