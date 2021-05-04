@@ -22,6 +22,11 @@ decl_storage! {
     trait Store for Module<T: Config> as ColdStack {
         // Admin account key
         Key get(fn key) config(): T::AccountId;
+
+        TotalFileSize get(fn total_file_size) config(): u128;
+
+        TotalFileCount get(fn total_file_count) config(): u128;
+
         Balances: map hasher(blake2_128_concat) Vec<u8> => u128;
 
         // Accounts that have permission to add files
@@ -68,6 +73,9 @@ decl_module! {
           ensure!(file_contents_hash.len() >= 16, Error::<T>::InvalidArguments);
           ensure!(file_name_hash.len() >= 16, Error::<T>::InvalidArguments);
 
+			    <TotalFileCount>::put(Self::total_file_count() + 1);
+			    <TotalFileSize>::put(Self::total_file_size() + file_size_bytes);
+
           Self::deposit_event(RawEvent::Upload(
             bucket_name_hash, 
             file_contents_hash, 
@@ -80,6 +88,16 @@ decl_module! {
         #[weight = (10_000, DispatchClass::Normal, Pays::No)]
         fn delete(origin, name_hash: Vec<u8>) {
           ensure_signed(origin)?;
+
+          // TODO update total_file_count and total_file_size
+          /*
+			    <TotalFileCount>::put(
+            if Self::total_file_count() == 0 
+              { 0 }
+            else 
+              { Self::total_file_count - 1 }
+          )
+          */
 
           Self::deposit_event(RawEvent::Delete(name_hash));
         }

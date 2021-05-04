@@ -85,17 +85,22 @@ function assert(cond, message){
     })
   }
 
+  const FILE_SIZE = 10
+
   function upload(){
     return api.tx.coldStack.upload(
       /*bucket_name_hash:*/   crypto.createHash('sha256').update("1").digest('hex'),
       /*file_contents_hash:*/ crypto.createHash('sha256').update("2").digest('hex'),
       /*file_name_hash:*/     crypto.createHash('sha256').update("3").digest('hex'),
-      /*file_size_bytes:  */  10,
+      /*file_size_bytes:  */  FILE_SIZE,
       /*gateway_eth_address:*/'0x2222222222222222222222222222222222222222',
     )
   }
 
   const testAddress = '0x1111111111111111111111111111111111111111'
+
+  assertEq((await api.query.coldStack.totalFileCount()).toNumber(), 0)
+  assertEq((await api.query.coldStack.totalFileSize()).toNumber(), 0)
 
   // Alice can upload file because she is admin
 
@@ -107,6 +112,9 @@ function assert(cond, message){
       upload()
     )
   )
+
+  assertEq((await api.query.coldStack.totalFileCount()).toNumber(), 1)
+  assertEq((await api.query.coldStack.totalFileSize()).toNumber(), FILE_SIZE)
 
   console.log("alice succeed to upload file")
 
