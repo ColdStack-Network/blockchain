@@ -3,6 +3,8 @@ const crypto = require('crypto')
 
 const NODE_URL= process.env.NODE_URL;
 
+console.log('NODE_URL', NODE_URL)
+
 async function expectOk(promise){
   try {
     await promise
