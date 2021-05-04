@@ -86,20 +86,13 @@ decl_module! {
         }
 
         #[weight = (0, DispatchClass::Normal, Pays::No)]
-        fn delete(origin, name_hash: Vec<u8>) {
+        fn delete(origin, bucket_name_hash: Vec<u8>, file_name_hash: Vec<u8>) {
           ensure_signed(origin)?;
 
-          // TODO update total_file_count and total_file_size
-          /*
-			    <TotalFileCount>::put(
-            if Self::total_file_count() == 0 
-              { 0 }
-            else 
-              { Self::total_file_count - 1 }
-          )
-          */
+          ensure!(bucket_name_hash.len() == 32, Error::<T>::InvalidArguments);
+          ensure!(file_contents_hash.len() == 32, Error::<T>::InvalidArguments);
 
-          Self::deposit_event(RawEvent::Delete(name_hash));
+          Self::deposit_event(RawEvent::Delete(bucket_name_hash, file_name_hash));
         }
 
         #[weight = (0, DispatchClass::Normal, Pays::No)]
@@ -199,7 +192,7 @@ decl_event! {
           /*file_size_bytes:*/     u128,
           /*gateway_eth_address:*/ Vec<u8>,
         ),
-        Delete(Vec<u8>,),
+        Delete(Vec<u8>,Vec<u8>),
         Deposit(Vec<u8>, u128),
         Withdraw(Vec<u8>, u128),
         FilePermissionGranted(AccountId),
