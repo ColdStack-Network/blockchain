@@ -13,7 +13,11 @@ mod tests;
 
 #[frame_support::pallet]
 pub mod pallet {
-	use frame_support::{dispatch::DispatchResultWithPostInfo, pallet_prelude::*};
+	use frame_support::{
+    dispatch::DispatchResultWithPostInfo, 
+    pallet_prelude::*,
+    weights::{Pays},
+  };
 	use frame_system::pallet_prelude::*;
   use sp_std::vec::Vec;
 
@@ -141,7 +145,7 @@ pub mod pallet {
 
 		/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
-		#[pallet::weight(0)]
+		#[pallet::weight((0, Pays::No))]
 		pub fn upload(origin: OriginFor<T>, 
       bucket_name_hash: Vec<u8>,
       file_contents_hash: Vec<u8>,
@@ -179,7 +183,7 @@ pub mod pallet {
       Ok(().into())
 		}
 
-		#[pallet::weight(0)]
+		#[pallet::weight((0, Pays::No))]
     fn delete(origin: OriginFor<T>, 
       bucket_name_hash: Vec<u8>, 
       file_name_hash: Vec<u8>,
@@ -195,7 +199,7 @@ pub mod pallet {
       Ok(().into())
     }
 
-		#[pallet::weight(0)]
+		#[pallet::weight((0, Pays::No))]
     fn deposit(origin: OriginFor<T>,
       account: Vec<u8>, value: u128
     ) -> DispatchResultWithPostInfo {
@@ -223,7 +227,7 @@ pub mod pallet {
       Ok(().into())
     }
 
-		#[pallet::weight(0)]
+		#[pallet::weight((0, Pays::No))]
     fn withdraw(origin: OriginFor<T>,
       account: Vec<u8>, value: u128
     ) -> DispatchResultWithPostInfo {
@@ -247,7 +251,7 @@ pub mod pallet {
       Ok(().into())
     }
 
-		#[pallet::weight(0)]
+		#[pallet::weight((0, Pays::No))]
     fn grant_file_permission(origin: OriginFor<T>,
       account_id: T::AccountId
     ) -> DispatchResultWithPostInfo {
@@ -258,7 +262,7 @@ pub mod pallet {
       Ok(().into())
     }
 
-		#[pallet::weight(0)]
+		#[pallet::weight((0, Pays::No))]
     fn grant_billing_permission(origin: OriginFor<T>,
       account_id: T::AccountId
     ) -> DispatchResultWithPostInfo {
@@ -269,7 +273,7 @@ pub mod pallet {
       Ok(().into())
     }
 
-		#[pallet::weight(0)]
+		#[pallet::weight((0, Pays::No))]
     fn revoke_file_permission(origin: OriginFor<T>,
       account_id: T::AccountId
     ) -> DispatchResultWithPostInfo {
@@ -282,7 +286,7 @@ pub mod pallet {
       Ok(().into())
     }
 
-		#[pallet::weight(0)]
+		#[pallet::weight((0, Pays::No))]
     fn revoke_billing_permission(origin: OriginFor<T>,
       account_id: T::AccountId
     ) -> DispatchResultWithPostInfo {
