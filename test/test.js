@@ -1,13 +1,16 @@
 const {ApiPromise, RPCProvider, WsProvider, Keyring} = require('@polkadot/api');
+const crypto = require('crypto')
 
 const NODE_URL= process.env.NODE_URL;
+
+console.log('NODE_URL', NODE_URL)
 
 async function expectOk(promise){
   try {
     await promise
   } catch(e){
     console.log('FAIL: Caught error', e.toString())
-    process.exit(1)
+    throw e
   }
 }
 
@@ -50,11 +53,7 @@ function assert(cond, message){
   async function sendTxAndWait(account, tx){
     return new Promise(async (resolve, reject) => {
       const unsub = await tx.signAndSend(account, (result) => {
-        //if (result.status.isFinalized) {
-          //console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
-        //}
         if (result.status.isInBlock) {
-          //console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
           let rejected = false
           result.events
           .filter(({event}) =>
@@ -72,7 +71,6 @@ function assert(cond, message){
             }
             rejected = true
           })
-          //console.log('events', result.events.map(e => JSON.stringify(e.event)))
           unsub();
           if(!rejected){
             resolve(result)
@@ -82,7 +80,26 @@ function assert(cond, message){
     })
   }
 
+  const FILE_CONTENTS = "loremipsum"
+  const FILE_SIZE = FILE_CONTENTS.length
+  const BUCKET_NAME_HASH = '0x' + crypto.createHash('sha256').update("my_bucket").digest('hex')
+
+  let uploadNumber = 0
+  function upload(){
+    const number = (uploadNumber++).toString()
+    return api.tx.coldStack.upload(
+      /*bucket_name_hash:*/   BUCKET_NAME_HASH, 
+      /*file_contents_hash:*/ '0x' + crypto.createHash('sha256').update(FILE_CONTENTS).digest('hex'),
+      /*file_name_hash:*/     '0x' + crypto.createHash('sha256').update(number).digest('hex'),
+      /*file_size_bytes:  */  FILE_SIZE,
+      /*gateway_eth_address:*/'0x2222222222222222222222222222222222222222',
+    )
+  }
+
   const testAddress = '0x1111111111111111111111111111111111111111'
+
+  assertEq((await api.query.coldStack.totalFileCount()).toNumber(), 0)
+  assertEq((await api.query.coldStack.totalFileSize()).toNumber(), 0)
 
   // Alice can upload file because she is admin
 
@@ -91,14 +108,12 @@ function assert(cond, message){
   await expectOk(
     sendTxAndWait(
       alice,
-      api.tx.coldStack.payForUpload(
-        testAddress,
-        '0x11111111111111111111111111111111',
-        '0x22222222222222222222222222222222',
-        1
-      )
+      upload()
     )
   )
+
+  assertEq((await api.query.coldStack.totalFileCount()).toNumber(), 1)
+  assertEq((await api.query.coldStack.totalFileSize()).toNumber(), FILE_SIZE)
 
   console.log("alice succeed to upload file")
 
@@ -108,23 +123,38 @@ function assert(cond, message){
   await expectFail(
     sendTxAndWait(
       bob,
-      api.tx.coldStack.payForUpload(
-        testAddress,
-        '0x11111111111111111111111111111111',
-        '0x22222222222222222222222222222222',
-        1
-      )
+      upload()
     ),
     'coldStack.Unauthorized'
   )
 
   console.log("bob failed to upload file")
 
+  // Let's grant permission to Bob
+
+  await expectOk(
+    sendTxAndWait(
+      alice,
+      api.tx.coldStack.grantFilePermission(bob.address)
+    )
+  )
+
+  console.log("alice granted file permission to bob")
+
+  // Now Bob can upload too
+
+  await expectOk(
+    sendTxAndWait(
+      bob,
+      upload()
+    )
+  )
+
+  console.log("bob succeed to upload file")
 
   // testAddress has zero balance
 
   assert((await api.query.coldStack.balances(testAddress)).eq(0), 'Unexpected balance')
-
 
   // Deposit 1 to testAddress
 
@@ -140,6 +170,91 @@ function assert(cond, message){
   // now testAddress has balance eq to 1
 
   assert((await api.query.coldStack.balances(testAddress)).eq(1), 'Unexpected balance')
+
+  // Try to withdraw 2 from testAddress and get InsufficientFunds
+
+  await expectFail(
+    sendTxAndWait(
+      alice,
+      api.tx.coldStack.withdraw(testAddress, 2)
+    ),
+    'coldStack.InsufficientFunds'
+  )
+
+  console.log("alice failed to deposit 2 tokens")
+
+  // Try to withdraw 1
+
+  await expectOk(
+    sendTxAndWait(
+      alice,
+      api.tx.coldStack.withdraw(testAddress, 1)
+    )
+  )
+
+  console.log("alice succeeded to withdraw 1 token")
+
+  // And get balance back to zero
+
+  assert((await api.query.coldStack.balances(testAddress)).eq(0), 'Unexpected balance')
+
+  // Bob cannot give permissions to himself
+
+  await expectFail(
+    sendTxAndWait(
+      bob,
+      api.tx.coldStack.grantBillingPermission(bob.address)
+    ),
+    'coldStack.Unauthorized'
+  )
+
+  console.log("bob failed to grant permission to himself")
+
+  // Bob cannot deposit until given permission
+
+  await expectFail(
+    sendTxAndWait(
+      bob,
+      api.tx.coldStack.deposit(testAddress, 1)
+    ),
+    'coldStack.Unauthorized'
+  )
+
+  console.log("bob failed to deposit 1 token")
+
+  // Until we give him permission
+
+  await expectOk(
+    sendTxAndWait(
+      alice,
+      api.tx.coldStack.grantBillingPermission(bob.address)
+    )
+  )
+
+  console.log("alice granted billing permission to bob")
+
+  // And now he can deposit too
+
+  await expectOk(
+    sendTxAndWait(
+      bob,
+      api.tx.coldStack.deposit(testAddress, 50)
+    )
+  )
+
+  console.log("bob succeed to deposit tokens")
+
+  await expectOk(
+    sendTxAndWait(
+      bob,
+      api.tx.coldStack.delete(
+      /*bucket_name_hash*/ BUCKET_NAME_HASH,
+      /*file_name_hash :*/ '0x' + crypto.createHash('sha256').update("0").digest('hex'),
+      )
+    )
+  )
+
+  console.log("bob succeed to delete his file")
 
   console.log('Tests passed')
 
