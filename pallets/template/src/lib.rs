@@ -49,6 +49,14 @@ pub mod pallet {
   pub type TotalFileSize<T: Config> = StorageValue<_, u128, ValueQuery>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn total_issuance)]
+  pub type TotalIssuance<T: Config> = StorageValue<_, u128, ValueQuery>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn locked_funds)]
+  pub type LockedFunds<T: Config> = StorageValue<_, u128, ValueQuery>;
+
+	#[pallet::storage]
 	pub type Balances<T: Config> = StorageMap<
 		_,
 		Blake2_128Concat,
@@ -78,6 +86,7 @@ pub mod pallet {
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
 		pub key: T::AccountId,
+    pub total_issuance: u128,
 	}
 
 	#[cfg(feature = "std")]
@@ -85,6 +94,7 @@ pub mod pallet {
 		fn default() -> Self {
 			Self {
 				key: Default::default(),
+        total_issuance: Default::default(),
 			}
 		}
 	}
@@ -95,6 +105,8 @@ pub mod pallet {
 			<Key<T>>::put(&self.key);
 			<TotalFileCount<T>>::put(0);
 			<TotalFileSize<T>>::put(0);
+      <TotalIssuance<T>>::put(&self.total_issuance);
+      <LockedFunds<T>>::put(&self.total_issuance);
 		}
 	}
 
@@ -128,6 +140,7 @@ pub mod pallet {
 	pub enum Error<T> {
     InvalidArguments,
     Unauthorized,
+    InsufficientIssuance,
     InsufficientFunds,
 	}
 
@@ -164,7 +177,6 @@ pub mod pallet {
       ensure!(has_permission, Error::<T>::Unauthorized);
 
       ensure!(gateway_eth_address.len() == 20, Error::<T>::InvalidArguments);
-
       ensure!(bucket_name_hash.len() == 32, Error::<T>::InvalidArguments);
       ensure!(file_contents_hash.len() == 32, Error::<T>::InvalidArguments);
       ensure!(file_name_hash.len() == 32, Error::<T>::InvalidArguments);
@@ -215,15 +227,19 @@ pub mod pallet {
 
       ensure!(account.len() == 20, Error::<T>::InvalidArguments);
 
+      let locked_funds = LockedFunds::<T>::get();
+
+      ensure!(locked_funds >= value, Error::<T>::InsufficientIssuance);
+
       if !Balances::<T>::contains_key(&account) {
         Balances::<T>::insert(&account, value);
-        Self::deposit_event(Event::Deposit(account, value));
       } else {
         let current_balance = Balances::<T>::get(&account);
         // TODO overflow?
         Balances::<T>::insert(&account, current_balance + value);
-        Self::deposit_event(Event::Deposit(account, value));
       }
+      LockedFunds::<T>::put(locked_funds - value);
+      Self::deposit_event(Event::Deposit(account, value));
       Ok(().into())
     }
 
@@ -248,6 +264,7 @@ pub mod pallet {
       ensure!(balance >= value, Error::<T>::InsufficientFunds);
       let next_balance = balance - value;
       Balances::<T>::insert(&account, next_balance);
+      LockedFunds::<T>::put(LockedFunds::<T>::get() + value);
       Ok(().into())
     }
 

@@ -101,6 +101,11 @@ function assert(cond, message){
   assertEq((await api.query.coldStack.totalFileCount()).toNumber(), 0)
   assertEq((await api.query.coldStack.totalFileSize()).toNumber(), 0)
 
+
+  // Total issuance is equal to locked funds
+  const totalIssuance = (await api.query.coldStack.totalIssuance()).toNumber()
+  assertEq(totalIssuance, (await api.query.coldStack.lockedFunds()).toNumber())
+
   // Alice can upload file because she is admin
 
   console.log("initialized")
@@ -171,6 +176,10 @@ function assert(cond, message){
 
   assert((await api.query.coldStack.balances(testAddress)).eq(1), 'Unexpected balance')
 
+  // And locked funds is equal to `totalIssuance - 1`
+
+  assertEq(totalIssuance - 1, (await api.query.coldStack.lockedFunds()).toNumber())
+
   // Try to withdraw 2 from testAddress and get InsufficientFunds
 
   await expectFail(
@@ -197,6 +206,10 @@ function assert(cond, message){
   // And get balance back to zero
 
   assert((await api.query.coldStack.balances(testAddress)).eq(0), 'Unexpected balance')
+
+  // And locked funds eq to totalIssuance
+
+  assertEq(totalIssuance, (await api.query.coldStack.lockedFunds()).toNumber())
 
   // Bob cannot give permissions to himself
 
