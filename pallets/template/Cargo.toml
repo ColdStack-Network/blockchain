@@ -1,10 +1,11 @@
 [package]
-authors = ['https://coldstack.io']
-description = 'ColdStack pallet'
+authors = ['Substrate DevHub <https://github.com/substrate-developer-hub>']
+description = 'FRAME pallet template for defining custom runtime logic.'
 edition = '2018'
-homepage = 'https://coldstack.io'
+homepage = 'https://substrate.dev'
 license = 'Unlicense'
-name = 'pallet-coldstack'
+name = 'pallet-template'
+readme = 'README.md'
 repository = 'https://github.com/substrate-developer-hub/substrate-node-template/'
 version = '3.0.0'
 
@@ -12,12 +13,12 @@ version = '3.0.0'
 targets = ['x86_64-unknown-linux-gnu']
 
 [dependencies]
+serde = { version = "1.0.119" }
 codec = { default-features = false, features = ['derive'], package = 'parity-scale-codec', version = '2.0.0' }
 frame-system = { default-features = false, version = '3.0.0' }
 frame-support = { default-features = false, version = '3.0.0' }
 frame-benchmarking = { default-features = false, optional = true, version = '3.1.0' }
 sp-std = { default-features = false, version = '3.0.0' }
-serde = { version = "1.0.101", optional = true, features = ["derive"] }
 
 [dev-dependencies]
 serde = { version = "1.0.119" }
@@ -33,7 +34,6 @@ std = [
 	'frame-system/std',
 	'frame-benchmarking/std',
 	'sp-std/std',
-  'serde',
 ]
 runtime-benchmarks = [
 	'frame-benchmarking',
