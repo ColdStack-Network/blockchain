@@ -71,14 +71,9 @@ pub mod pallet {
 		ValueQuery
 	>;
 
-  // TODO do we need this?
-
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
 		pub key: T::AccountId,
-    // TODO?
-    pub total_file_count: u128,
-    pub total_file_size: u128,
 	}
 
 	#[cfg(feature = "std")]
@@ -86,9 +81,6 @@ pub mod pallet {
 		fn default() -> Self {
 			Self {
 				key: Default::default(),
-        // TODO is it right?
-        total_file_count: Default::default(),
-        total_file_size: Default::default(),
 			}
 		}
 	}
@@ -97,6 +89,8 @@ pub mod pallet {
 	impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
 		fn build(&self) {
 			<Key<T>>::put(&self.key);
+			<TotalFileCount<T>>::put(0);
+			<TotalFileSize<T>>::put(0);
 		}
 	}
 

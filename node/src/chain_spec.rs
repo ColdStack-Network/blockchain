@@ -156,8 +156,6 @@ fn testnet_genesis(
 		}),
     pallet_template: Some(ColdStackConfig {
 			key: root_key_clone,
-      total_file_count: 0,
-      total_file_size: 0,
     })
 	}
 }
