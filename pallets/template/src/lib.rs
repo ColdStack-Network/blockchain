@@ -120,10 +120,10 @@ pub mod pallet {
 		/// parameters. [something, who]
     // TODO pass custom struct to event?
     Upload(
-      /*bucket_name_hash:*/    Vec<u8>,
-      /*file_contents_hash:*/  Vec<u8>,
+      /*user_eth_address*/     Vec<u8>,
       /*file_name_hash:*/      Vec<u8>,
       /*file_size_bytes:*/     u128,
+      /*file_contents_hash:*/  Vec<u8>,
       /*gateway_eth_address:*/ Vec<u8>,
     ),
     Delete(Vec<u8>,Vec<u8>),
@@ -160,10 +160,10 @@ pub mod pallet {
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
 		#[pallet::weight((0, Pays::No))]
 		pub fn upload(origin: OriginFor<T>, 
-      bucket_name_hash: Vec<u8>,
-      file_contents_hash: Vec<u8>,
+      user_eth_address: Vec<u8>,
       file_name_hash: Vec<u8>,
       file_size_bytes: u128,
+      file_contents_hash: Vec<u8>,
       gateway_eth_address: Vec<u8>,
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
@@ -176,8 +176,8 @@ pub mod pallet {
 
       ensure!(has_permission, Error::<T>::Unauthorized);
 
+      ensure!(user_eth_address.len() == 20, Error::<T>::InvalidArguments);
       ensure!(gateway_eth_address.len() == 20, Error::<T>::InvalidArguments);
-      ensure!(bucket_name_hash.len() == 32, Error::<T>::InvalidArguments);
       ensure!(file_contents_hash.len() == 32, Error::<T>::InvalidArguments);
       ensure!(file_name_hash.len() == 32, Error::<T>::InvalidArguments);
 
@@ -185,10 +185,10 @@ pub mod pallet {
       <TotalFileSize<T>>::put(Self::total_file_size() + file_size_bytes);
 
       Self::deposit_event(Event::Upload(
-        bucket_name_hash, 
-        file_contents_hash, 
+        user_eth_address, 
         file_name_hash, 
         file_size_bytes,
+        file_contents_hash, 
         gateway_eth_address,
       ));
 
@@ -197,17 +197,17 @@ pub mod pallet {
 
 		#[pallet::weight((0, Pays::No))]
     fn delete(origin: OriginFor<T>, 
-      bucket_name_hash: Vec<u8>, 
+      user_eth_address: Vec<u8>, 
       file_name_hash: Vec<u8>,
     ) -> DispatchResultWithPostInfo {
       ensure_signed(origin)?;
 
-      ensure!(bucket_name_hash.len() == 32, Error::<T>::InvalidArguments);
+      ensure!(user_eth_address.len() == 20, Error::<T>::InvalidArguments);
       ensure!(file_name_hash.len() == 32, Error::<T>::InvalidArguments);
 
       // TODO total_file_count, total_file_size
 
-      Self::deposit_event(Event::Delete(bucket_name_hash, file_name_hash));
+      Self::deposit_event(Event::Delete(user_eth_address, file_name_hash));
       Ok(().into())
     }
 

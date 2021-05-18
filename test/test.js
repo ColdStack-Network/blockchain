@@ -82,16 +82,16 @@ function assert(cond, message){
 
   const FILE_CONTENTS = "loremipsum"
   const FILE_SIZE = FILE_CONTENTS.length
-  const BUCKET_NAME_HASH = '0x' + crypto.createHash('sha256').update("my_bucket").digest('hex')
+  const USER_ETH_ADDRESS = '0x3333333333333333333333333333333333333333'
 
   let uploadNumber = 0
   function upload(){
     const number = (uploadNumber++).toString()
     return api.tx.coldStack.upload(
-      /*bucket_name_hash:*/   BUCKET_NAME_HASH, 
-      /*file_contents_hash:*/ '0x' + crypto.createHash('sha256').update(FILE_CONTENTS).digest('hex'),
+      /*user_eth_address:*/   USER_ETH_ADDRESS,
       /*file_name_hash:*/     '0x' + crypto.createHash('sha256').update(number).digest('hex'),
       /*file_size_bytes:  */  FILE_SIZE,
+      /*file_contents_hash:*/ '0x' + crypto.createHash('sha256').update(FILE_CONTENTS).digest('hex'),
       /*gateway_eth_address:*/'0x2222222222222222222222222222222222222222',
     )
   }
@@ -261,7 +261,7 @@ function assert(cond, message){
     sendTxAndWait(
       bob,
       api.tx.coldStack.delete(
-      /*bucket_name_hash*/ BUCKET_NAME_HASH,
+      /*user_eth_address*/ USER_ETH_ADDRESS,
       /*file_name_hash :*/ '0x' + crypto.createHash('sha256').update("0").digest('hex'),
       )
     )
