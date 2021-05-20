@@ -1,5 +1,8 @@
 # Coldstack Privatechain
 
+General information:
+https://coldstack.atlassian.net/wiki/spaces/CS/pages/66977793/Blockchain
+
 ## Build
 
 To setup rust, see instructions below.
@@ -23,6 +26,11 @@ docker build -t privatechain .
 docker tag privatechain coldstack/privatechain:latest
 docker push coldstack/privatechain
 ```
+
+## Github workflows
+
+Docker image built and pushed in a github worflow. See
+.github/workflows/publish-docker.yml
 
 ## Run docker image
 
