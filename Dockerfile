@@ -28,4 +28,4 @@ USER coldstack
 EXPOSE 30333 9933 9944
 VOLUME ["/data"]
 
-CMD ["/usr/local/bin/coldstack"]
+ENTRYPOINT ["/usr/local/bin/coldstack"]

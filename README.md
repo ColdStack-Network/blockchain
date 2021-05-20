@@ -37,7 +37,7 @@ Docker image built and pushed in a github worflow. See
 Run in dev mode
 
 ```
-docker run coldstack/privatechain coldstack --dev --ws-external
+docker run coldstack/privatechain --dev --ws-external
 ```
 
 Run with volume:
@@ -47,12 +47,12 @@ Run with volume:
 chown 1000.1000 /your/host/directory -R
 
 # Run
-docker run -v /your/host/directory:/data coldstack/privatechain coldstack --dev --ws-external
+docker run -v /your/host/directory:/data coldstack/privatechain --dev --ws-external
 ```
 
 Expose web service port:
 ```
-docker run -p 9944:9944 coldstack/privatechain coldstack --dev --ws-external
+docker run -p 9944:9944 coldstack/privatechain --dev --ws-external
 ```
 
 ## Run tests
