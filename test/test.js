@@ -222,7 +222,7 @@ function assert(cond, message){
     'coldStack.InsufficientFunds'
   )
 
-  console.log("alice failed to deposit 2 tokens")
+  console.log("alice failed to withdraw 2 tokens")
 
   // Try to withdraw 1
 
