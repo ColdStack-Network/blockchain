@@ -66,20 +66,38 @@ pub mod pallet {
 	>;
 
 	#[pallet::storage]
-	pub type FilePermissionOwners<T: Config> = StorageMap<
+	pub type FilePermissionOwnersByETHAddress<T: Config> = StorageMap<
 		_,
 		Blake2_128Concat,
+		Vec<u8>,
 		T::AccountId,
-		(),
 		ValueQuery
 	>;
 
 	#[pallet::storage]
-	pub type BillingPermissionOwners<T: Config> = StorageMap<
+	pub type FilePermissionOwnersByAccountId<T: Config> = StorageMap<
 		_,
 		Blake2_128Concat,
 		T::AccountId,
-		(),
+		Vec<u8>,
+		ValueQuery
+	>;
+
+	#[pallet::storage]
+	pub type BillingPermissionOwnersByETHAddress<T: Config> = StorageMap<
+		_,
+		Blake2_128Concat,
+		Vec<u8>,
+		T::AccountId,
+		ValueQuery
+	>;
+
+	#[pallet::storage]
+	pub type BillingPermissionOwnersByAccountId<T: Config> = StorageMap<
+		_,
+		Blake2_128Concat,
+		T::AccountId,
+		Vec<u8>,
 		ValueQuery
 	>;
 
@@ -129,10 +147,10 @@ pub mod pallet {
     Delete(Vec<u8>,Vec<u8>),
     Deposit(Vec<u8>, u128),
     Withdraw(Vec<u8>, u128),
-    FilePermissionGranted(T::AccountId),
-    FilePermissionRevoked(T::AccountId),
-    BillingPermissionGranted(T::AccountId),
-    BillingPermissionRevoked(T::AccountId),
+    FilePermissionGranted(Vec<u8>, T::AccountId),
+    FilePermissionRevoked(Vec<u8>, T::AccountId),
+    BillingPermissionGranted(Vec<u8>, T::AccountId),
+    BillingPermissionRevoked(Vec<u8>, T::AccountId),
 	}
 
 	// Errors inform users that something went wrong.
@@ -172,7 +190,7 @@ pub mod pallet {
         // is admin
         sender == Self::key()
         ||
-        FilePermissionOwners::<T>::contains_key(&sender);
+        FilePermissionOwnersByAccountId::<T>::contains_key(&sender);
 
       ensure!(has_permission, Error::<T>::Unauthorized);
 
@@ -200,7 +218,14 @@ pub mod pallet {
       user_eth_address: Vec<u8>, 
       file_name_hash: Vec<u8>,
     ) -> DispatchResultWithPostInfo {
-      ensure_signed(origin)?;
+      let sender = ensure_signed(origin)?;
+
+      let has_permission = 
+        // is admin
+        sender == Self::key()
+        ||
+        FilePermissionOwnersByAccountId::<T>::contains_key(&sender);
+      ensure!(has_permission, Error::<T>::Unauthorized);
 
       ensure!(user_eth_address.len() == 20, Error::<T>::InvalidArguments);
       ensure!(file_name_hash.len() == 32, Error::<T>::InvalidArguments);
@@ -221,7 +246,7 @@ pub mod pallet {
         // is admin
         sender == Self::key()
         ||
-        BillingPermissionOwners::<T>::contains_key(&sender);
+        BillingPermissionOwnersByAccountId::<T>::contains_key(&sender);
 
       ensure!(has_permission, Error::<T>::Unauthorized);
 
@@ -238,6 +263,7 @@ pub mod pallet {
         // TODO overflow?
         Balances::<T>::insert(&account, current_balance + value);
       }
+      // TODO comment why it cannot overflow
       LockedFunds::<T>::put(locked_funds - value);
       Self::deposit_event(Event::Deposit(account, value));
       Ok(().into())
@@ -253,7 +279,7 @@ pub mod pallet {
         // is admin
         sender == Self::key()
         ||
-        BillingPermissionOwners::<T>::contains_key(&sender);
+        BillingPermissionOwnersByAccountId::<T>::contains_key(&sender);
 
       ensure!(has_permission, Error::<T>::Unauthorized);
 
@@ -264,55 +290,78 @@ pub mod pallet {
       ensure!(balance >= value, Error::<T>::InsufficientFunds);
       let next_balance = balance - value;
       Balances::<T>::insert(&account, next_balance);
+      // TODO comment why it can never overflow
       LockedFunds::<T>::put(LockedFunds::<T>::get() + value);
       Ok(().into())
     }
 
 		#[pallet::weight((0, Pays::No))]
     fn grant_file_permission(origin: OriginFor<T>,
-      account_id: T::AccountId
+      eth_address: Vec<u8>, 
+      account_id: T::AccountId,
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
       ensure!(sender == Self::key(), Error::<T>::Unauthorized);
-      FilePermissionOwners::<T>::insert(&account_id, ());
-      Self::deposit_event(Event::FilePermissionGranted(account_id));
+
+      ensure!(eth_address.len() == 20, Error::<T>::InvalidArguments);
+
+      if !FilePermissionOwnersByETHAddress::<T>::contains_key(&eth_address) {
+        let current_account_id = FilePermissionOwnersByETHAddress::<T>::get(&eth_address);
+        FilePermissionOwnersByAccountId::<T>::take(&current_account_id);
+      }
+      FilePermissionOwnersByETHAddress::<T>::insert(&eth_address, &account_id);
+      FilePermissionOwnersByAccountId::<T>::insert(&account_id, &eth_address);
+      Self::deposit_event(Event::FilePermissionGranted(eth_address, account_id));
       Ok(().into())
     }
 
 		#[pallet::weight((0, Pays::No))]
     fn grant_billing_permission(origin: OriginFor<T>,
-      account_id: T::AccountId
+      eth_address: Vec<u8>, 
+      account_id: T::AccountId,
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
       ensure!(sender == Self::key(), Error::<T>::Unauthorized);
-      BillingPermissionOwners::<T>::insert(&account_id, ());
-      Self::deposit_event(Event::BillingPermissionGranted(account_id));
+
+      ensure!(eth_address.len() == 20, Error::<T>::InvalidArguments);
+
+      if !BillingPermissionOwnersByETHAddress::<T>::contains_key(&eth_address) {
+        let current_account_id = BillingPermissionOwnersByETHAddress::<T>::get(&eth_address);
+        BillingPermissionOwnersByAccountId::<T>::take(&current_account_id);
+      }
+      BillingPermissionOwnersByETHAddress::<T>::insert(&eth_address, &account_id);
+      BillingPermissionOwnersByAccountId::<T>::insert(&account_id, &eth_address);
+      Self::deposit_event(Event::BillingPermissionGranted(eth_address, account_id));
       Ok(().into())
     }
 
 		#[pallet::weight((0, Pays::No))]
     fn revoke_file_permission(origin: OriginFor<T>,
-      account_id: T::AccountId
+      eth_address: Vec<u8>, 
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
       ensure!(sender == Self::key(), Error::<T>::Unauthorized);
-      ensure!(FilePermissionOwners::<T>::contains_key(&account_id), 
+      ensure!(eth_address.len() == 20, Error::<T>::InvalidArguments);
+      ensure!(FilePermissionOwnersByETHAddress::<T>::contains_key(&eth_address), 
                                         Error::<T>::InvalidArguments);
-      FilePermissionOwners::<T>::take(&account_id);
-      Self::deposit_event(Event::FilePermissionRevoked(account_id));
+      let account_id = FilePermissionOwnersByETHAddress::<T>::take(&eth_address);
+      FilePermissionOwnersByAccountId::<T>::take(&account_id);
+      Self::deposit_event(Event::FilePermissionRevoked(eth_address, account_id));
       Ok(().into())
     }
 
 		#[pallet::weight((0, Pays::No))]
     fn revoke_billing_permission(origin: OriginFor<T>,
-      account_id: T::AccountId
+      eth_address: Vec<u8>, 
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
       ensure!(sender == Self::key(), Error::<T>::Unauthorized);
-      ensure!(BillingPermissionOwners::<T>::contains_key(&account_id), 
+      ensure!(eth_address.len() == 20, Error::<T>::InvalidArguments);
+      ensure!(BillingPermissionOwnersByETHAddress::<T>::contains_key(&eth_address), 
                                         Error::<T>::InvalidArguments);
-      BillingPermissionOwners::<T>::take(&account_id);
-      Self::deposit_event(Event::BillingPermissionRevoked(account_id));
+      let account_id = BillingPermissionOwnersByETHAddress::<T>::take(&eth_address);
+      BillingPermissionOwnersByAccountId::<T>::take(&account_id);
+      Self::deposit_event(Event::BillingPermissionRevoked(eth_address, account_id));
       Ok(().into())
     }
 

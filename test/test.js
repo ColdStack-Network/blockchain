@@ -49,6 +49,7 @@ function assert(cond, message){
 
   const alice = keyring.addFromUri('//Alice')
   const bob = keyring.addFromUri('//Bob')
+  const bobEthAddress = '0x4444444444444444444444444444444444444444'
 
   async function sendTxAndWait(account, tx){
     return new Promise(async (resolve, reject) => {
@@ -140,7 +141,7 @@ function assert(cond, message){
   await expectOk(
     sendTxAndWait(
       alice,
-      api.tx.coldStack.grantFilePermission(bob.address)
+      api.tx.coldStack.grantFilePermission(bobEthAddress, bob.address)
     )
   )
 
@@ -156,6 +157,37 @@ function assert(cond, message){
   )
 
   console.log("bob succeed to upload file")
+
+  await expectOk(
+    sendTxAndWait(
+      bob,
+      api.tx.coldStack.delete(
+      /*user_eth_address*/ USER_ETH_ADDRESS,
+      /*file_name_hash :*/ '0x' + crypto.createHash('sha256').update("0").digest('hex'),
+      )
+    )
+  )
+
+  console.log("bob succeed to delete his file")
+
+  console.log('now revoke bobs permission to upload file')
+
+  await expectOk(
+    sendTxAndWait(
+      alice,
+      api.tx.coldStack.revokeFilePermission(bobEthAddress)
+    )
+  )
+
+  console.log('now bob cannot upload file')
+
+  await expectFail(
+    sendTxAndWait(
+      bob,
+      upload()
+    ),
+    'coldStack.Unauthorized'
+  )
 
   // testAddress has zero balance
 
@@ -216,7 +248,7 @@ function assert(cond, message){
   await expectFail(
     sendTxAndWait(
       bob,
-      api.tx.coldStack.grantBillingPermission(bob.address)
+      api.tx.coldStack.grantBillingPermission(bobEthAddress, bob.address)
     ),
     'coldStack.Unauthorized'
   )
@@ -240,7 +272,7 @@ function assert(cond, message){
   await expectOk(
     sendTxAndWait(
       alice,
-      api.tx.coldStack.grantBillingPermission(bob.address)
+      api.tx.coldStack.grantBillingPermission(bobEthAddress, bob.address)
     )
   )
 
@@ -257,17 +289,24 @@ function assert(cond, message){
 
   console.log("bob succeed to deposit tokens")
 
+  console.log('revoke bob billing permission')
+
   await expectOk(
     sendTxAndWait(
-      bob,
-      api.tx.coldStack.delete(
-      /*user_eth_address*/ USER_ETH_ADDRESS,
-      /*file_name_hash :*/ '0x' + crypto.createHash('sha256').update("0").digest('hex'),
-      )
+      alice,
+      api.tx.coldStack.revokeBillingPermission(bobEthAddress)
     )
   )
 
-  console.log("bob succeed to delete his file")
+  console.log('now bob cannot deposit')
+
+  await expectFail(
+    sendTxAndWait(
+      bob,
+      api.tx.coldStack.deposit(testAddress, 1)
+    ),
+    'coldStack.Unauthorized'
+  )
 
   console.log('Tests passed')
 
