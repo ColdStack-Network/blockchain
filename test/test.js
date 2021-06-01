@@ -17,14 +17,13 @@ async function expectOk(promise){
 async function expectFail(promise, string){
   try {
     await promise
-    console.log('FAIL: expected error', string, 'but not caught')
-    process.exit(1)
   } catch(e){
     if(e.toString() != string){
-      console.log(`FAIL: expected ${string}, caught ${e.toString()}`)
-      process.exit(1)
+      throw new Error(`FAIL: expected ${string}, caught ${e.toString()}`)
     }
+    return
   }
+  throw new Error(`FAIL: expected error "${string}" but not caught`)
 }
 
 function assertEq(expected, actual){
