@@ -98,6 +98,7 @@ function assert(cond, message){
   }
 
   const testAddress = '0x1111111111111111111111111111111111111111'
+  const testAddress2 = '0x5555555555555555555555555555555555555555'
 
   assertEq((await api.query.coldStack.totalFileCount()).toNumber(), 0)
   assertEq((await api.query.coldStack.totalFileSize()).toNumber(), 0)
@@ -242,6 +243,30 @@ function assert(cond, message){
   // And locked funds eq to totalIssuance
 
   assertEq(totalIssuance, (await api.query.coldStack.lockedFunds()).toNumber())
+
+
+  console.log('Now deposit 10 to testAddress')
+
+  await expectOk(
+    sendTxAndWait(
+      alice,
+      api.tx.coldStack.deposit(testAddress, 10)
+    )
+  )
+
+  console.log('And transfer to testAddress2')
+
+  await expectOk(
+    sendTxAndWait(
+      alice,
+      api.tx.coldStack.transfer(testAddress, testAddress2, 4)
+    )
+  )
+
+  console.log('balances should change')
+
+  assert((await api.query.coldStack.balances(testAddress)).eq(6), 'Unexpected balance')
+  assert((await api.query.coldStack.balances(testAddress2)).eq(4), 'Unexpected balance')
 
   // Bob cannot give permissions to himself
 

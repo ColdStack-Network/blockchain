@@ -160,6 +160,7 @@ pub mod pallet {
     ),
     Deposit(Vec<u8>, u128),
     Withdraw(Vec<u8>, u128),
+    Transfer(Vec<u8>, Vec<u8>, u128),
     FilePermissionGranted(Vec<u8>, T::AccountId),
     FilePermissionRevoked(Vec<u8>, T::AccountId),
     BillingPermissionGranted(Vec<u8>, T::AccountId),
@@ -350,6 +351,42 @@ pub mod pallet {
       // TODO comment why it can never overflow
       LockedFunds::<T>::put(LockedFunds::<T>::get() + value);
       Self::deposit_event(Event::Withdraw(account, value));
+      Ok(().into())
+    }
+
+		#[pallet::weight((0, Pays::No))]
+    fn transfer(origin: OriginFor<T>,
+      from: Vec<u8>, 
+      to: Vec<u8>, 
+      value: u128,
+    ) -> DispatchResultWithPostInfo {
+      let sender = ensure_signed(origin)?;
+
+      let has_permission = 
+        // is admin
+        sender == Self::key()
+        ||
+        BillingPermissionOwnersByAccountId::<T>::contains_key(&sender);
+
+      ensure!(has_permission, Error::<T>::Unauthorized);
+
+      ensure!(from.len() == 20, Error::<T>::InvalidArguments);
+      ensure!(to.len() == 20, Error::<T>::InvalidArguments);
+
+      ensure!(Balances::<T>::contains_key(&from), Error::<T>::InsufficientFunds);
+      let balance = Balances::<T>::get(&from);
+      ensure!(balance >= value, Error::<T>::InsufficientFunds);
+      Balances::<T>::insert(&from, balance - value);
+
+      if !Balances::<T>::contains_key(&to) {
+        Balances::<T>::insert(&to, value);
+      } else {
+        let balance = Balances::<T>::get(&to);
+        // TODO overflow?
+        Balances::<T>::insert(&to, balance + value);
+      }
+
+      Self::deposit_event(Event::Transfer(from, to, value));
       Ok(().into())
     }
 
