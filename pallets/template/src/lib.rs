@@ -349,6 +349,7 @@ pub mod pallet {
       Balances::<T>::insert(&account, next_balance);
       // TODO comment why it can never overflow
       LockedFunds::<T>::put(LockedFunds::<T>::get() + value);
+      Self::deposit_event(Event::Withdraw(account, value));
       Ok(().into())
     }
 
