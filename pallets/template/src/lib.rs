@@ -145,6 +145,14 @@ pub mod pallet {
       /*gateway_eth_address:*/ Vec<u8>,
       /*filenode_eth_address:*/Vec<u8>,
     ),
+    Download(
+      /*user_eth_address*/     Vec<u8>,
+      /*file_name_hash:*/      Vec<u8>,
+      /*file_size_bytes:*/     u128,
+      /*file_contents_hash:*/  Vec<u8>,
+      /*gateway_eth_address:*/ Vec<u8>,
+      /*filenode_eth_address:*/Vec<u8>,
+    ),
     Delete(
       Vec<u8>, /* user_eth_address */
       Vec<u8>, /* file_name_hash */
@@ -179,8 +187,6 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 
-		/// An example dispatchable that takes a singles value as a parameter, writes the value to
-		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
 		#[pallet::weight((0, Pays::No))]
 		pub fn upload(origin: OriginFor<T>, 
       user_eth_address: Vec<u8>,
@@ -210,6 +216,43 @@ pub mod pallet {
       <TotalFileSize<T>>::put(Self::total_file_size() + file_size_bytes);
 
       Self::deposit_event(Event::Upload(
+        user_eth_address, 
+        file_name_hash, 
+        file_size_bytes,
+        file_contents_hash, 
+        gateway_eth_address,
+        filenode_eth_address,
+      ));
+
+      Ok(().into())
+		}
+
+		#[pallet::weight((0, Pays::No))]
+		pub fn download(origin: OriginFor<T>, 
+      user_eth_address: Vec<u8>,
+      file_name_hash: Vec<u8>,
+      file_size_bytes: u128,
+      file_contents_hash: Vec<u8>,
+      gateway_eth_address: Vec<u8>,
+    ) -> DispatchResultWithPostInfo {
+      let sender = ensure_signed(origin)?;
+
+      let has_permission = 
+        // is admin
+        sender == Self::key()
+        ||
+        FilePermissionOwnersByAccountId::<T>::contains_key(&sender);
+
+      let filenode_eth_address = FilePermissionOwnersByAccountId::<T>::get(&sender);
+
+      ensure!(has_permission, Error::<T>::Unauthorized);
+
+      ensure!(user_eth_address.len() == 20, Error::<T>::InvalidArguments);
+      ensure!(gateway_eth_address.len() == 20, Error::<T>::InvalidArguments);
+      ensure!(file_contents_hash.len() == 32, Error::<T>::InvalidArguments);
+      ensure!(file_name_hash.len() == 32, Error::<T>::InvalidArguments);
+
+      Self::deposit_event(Event::Download(
         user_eth_address, 
         file_name_hash, 
         file_size_bytes,
