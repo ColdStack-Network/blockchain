@@ -143,8 +143,13 @@ pub mod pallet {
       /*file_size_bytes:*/     u128,
       /*file_contents_hash:*/  Vec<u8>,
       /*gateway_eth_address:*/ Vec<u8>,
+      /*filenode_eth_address:*/Vec<u8>,
     ),
-    Delete(Vec<u8>,Vec<u8>),
+    Delete(
+      Vec<u8>, /* user_eth_address */
+      Vec<u8>, /* file_name_hash */
+      Vec<u8>, /* filenode_eth_address */
+    ),
     Deposit(Vec<u8>, u128),
     Withdraw(Vec<u8>, u128),
     FilePermissionGranted(Vec<u8>, T::AccountId),
@@ -192,6 +197,8 @@ pub mod pallet {
         ||
         FilePermissionOwnersByAccountId::<T>::contains_key(&sender);
 
+      let filenode_eth_address = FilePermissionOwnersByAccountId::<T>::get(&sender);
+
       ensure!(has_permission, Error::<T>::Unauthorized);
 
       ensure!(user_eth_address.len() == 20, Error::<T>::InvalidArguments);
@@ -208,6 +215,7 @@ pub mod pallet {
         file_size_bytes,
         file_contents_hash, 
         gateway_eth_address,
+        filenode_eth_address,
       ));
 
       Ok(().into())
@@ -227,12 +235,18 @@ pub mod pallet {
         FilePermissionOwnersByAccountId::<T>::contains_key(&sender);
       ensure!(has_permission, Error::<T>::Unauthorized);
 
+      let filenode_eth_address = FilePermissionOwnersByAccountId::<T>::get(&sender);
+
       ensure!(user_eth_address.len() == 20, Error::<T>::InvalidArguments);
       ensure!(file_name_hash.len() == 32, Error::<T>::InvalidArguments);
 
       // TODO total_file_count, total_file_size
 
-      Self::deposit_event(Event::Delete(user_eth_address, file_name_hash));
+      Self::deposit_event(Event::Delete(
+        user_eth_address, 
+        file_name_hash, 
+        filenode_eth_address
+      ));
       Ok(().into())
     }
 
