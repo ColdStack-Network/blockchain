@@ -65,6 +65,18 @@ pub mod pallet {
 		ValueQuery
 	>;
 
+  /*
+    Map node eth address -> node url
+  */
+	#[pallet::storage]
+	pub type NodeURLs<T: Config> = StorageMap<
+		_,
+		Blake2_128Concat,
+		Vec<u8>,
+		Vec<u8>,
+		ValueQuery
+	>;
+
 	#[pallet::storage]
 	pub type FilePermissionOwnersByETHAddress<T: Config> = StorageMap<
 		_,
@@ -98,6 +110,18 @@ pub mod pallet {
 		Blake2_128Concat,
 		T::AccountId,
 		Vec<u8>,
+		ValueQuery
+	>;
+
+  /*
+    Map gateway node address -> seed gateway node address
+  */
+	#[pallet::storage]
+	pub type GatewayNodeSeeds<T: Config> = StorageMap<
+		_,
+		Blake2_128Concat,
+		Vec<u8>,
+		Option<Vec<u8>>,
 		ValueQuery
 	>;
 
@@ -161,10 +185,11 @@ pub mod pallet {
     Deposit(Vec<u8>, u128),
     Withdraw(Vec<u8>, u128),
     Transfer(Vec<u8>, Vec<u8>, u128),
-    FilePermissionGranted(Vec<u8>, T::AccountId),
+    FilePermissionGranted(Vec<u8>, T::AccountId, Vec<u8>),
     FilePermissionRevoked(Vec<u8>, T::AccountId),
-    BillingPermissionGranted(Vec<u8>, T::AccountId),
+    BillingPermissionGranted(Vec<u8>, T::AccountId, Vec<u8>),
     BillingPermissionRevoked(Vec<u8>, T::AccountId),
+    GatewayNodeRegistered(Vec<u8>, Option<Vec<u8>>, Vec<u8>),
 	}
 
 	// Errors inform users that something went wrong.
@@ -394,6 +419,7 @@ pub mod pallet {
     fn grant_file_permission(origin: OriginFor<T>,
       eth_address: Vec<u8>, 
       account_id: T::AccountId,
+      node_url: Vec<u8>,
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
       ensure!(sender == Self::key(), Error::<T>::Unauthorized);
@@ -406,7 +432,8 @@ pub mod pallet {
       }
       FilePermissionOwnersByETHAddress::<T>::insert(&eth_address, &account_id);
       FilePermissionOwnersByAccountId::<T>::insert(&account_id, &eth_address);
-      Self::deposit_event(Event::FilePermissionGranted(eth_address, account_id));
+      NodeURLs::<T>::insert(&eth_address, &node_url);
+      Self::deposit_event(Event::FilePermissionGranted(eth_address, account_id, node_url));
       Ok(().into())
     }
 
@@ -414,6 +441,7 @@ pub mod pallet {
     fn grant_billing_permission(origin: OriginFor<T>,
       eth_address: Vec<u8>, 
       account_id: T::AccountId,
+      node_url: Vec<u8>,
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
       ensure!(sender == Self::key(), Error::<T>::Unauthorized);
@@ -426,7 +454,8 @@ pub mod pallet {
       }
       BillingPermissionOwnersByETHAddress::<T>::insert(&eth_address, &account_id);
       BillingPermissionOwnersByAccountId::<T>::insert(&account_id, &eth_address);
-      Self::deposit_event(Event::BillingPermissionGranted(eth_address, account_id));
+      NodeURLs::<T>::insert(&eth_address, &node_url);
+      Self::deposit_event(Event::BillingPermissionGranted(eth_address, account_id, node_url));
       Ok(().into())
     }
 
@@ -457,6 +486,29 @@ pub mod pallet {
       let account_id = BillingPermissionOwnersByETHAddress::<T>::take(&eth_address);
       BillingPermissionOwnersByAccountId::<T>::take(&account_id);
       Self::deposit_event(Event::BillingPermissionRevoked(eth_address, account_id));
+      Ok(().into())
+    }
+
+		#[pallet::weight((0, Pays::No))]
+    fn register_gateway_node(origin: OriginFor<T>,
+      node_eth_address: Vec<u8>, 
+      seed_eth_address: Option<Vec<u8>>,
+      node_url: Vec<u8>,
+    ) -> DispatchResultWithPostInfo {
+      let sender = ensure_signed(origin)?;
+      ensure!(sender == Self::key(), Error::<T>::Unauthorized);
+      ensure!(node_eth_address.len() == 20, Error::<T>::InvalidArguments);
+      if let Some(ref addr) = seed_eth_address {
+        ensure!(addr.len() == 20, Error::<T>::InvalidArguments);
+      }
+      /*
+        Ensure gateway node does not exist yet
+      */
+      ensure!(!GatewayNodeSeeds::<T>::contains_key(&node_eth_address), 
+                                        Error::<T>::InvalidArguments);
+      GatewayNodeSeeds::<T>::insert(&node_eth_address, &seed_eth_address);
+      NodeURLs::<T>::insert(&node_eth_address, &node_url);
+      Self::deposit_event(Event::GatewayNodeRegistered(node_eth_address, seed_eth_address, node_url));
       Ok(().into())
     }
 

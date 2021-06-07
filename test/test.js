@@ -74,6 +74,49 @@ async function expectFail(promise, string){
   const FILE_CONTENTS = "loremipsum"
   const FILE_SIZE = FILE_CONTENTS.length
   const USER_ETH_ADDRESS = '0x3333333333333333333333333333333333333333'
+  const GATEWAY_SEED_NODE = '0x2222222222222222222222222222222222222222'
+  const GATEWAY_SEC_NODE =  '0x6666666666666666666666666666666666666666'
+
+  console.log('register seed gateway node')
+
+  await expectOk(
+    sendTxAndWait(
+      alice,
+      api.tx.coldStack.registerGatewayNode(
+        GATEWAY_SEED_NODE,
+        null,
+        'http://gateway_seed.test',
+      )
+    )
+  )
+
+  console.log('register non-seed gateway node')
+
+  await expectOk(
+    sendTxAndWait(
+      alice,
+      api.tx.coldStack.registerGatewayNode(
+        GATEWAY_SEC_NODE,
+        GATEWAY_SEED_NODE,
+        'http://gateway_sec.test',
+      )
+    )
+  )
+
+  assert.equal(
+    (await api.query.coldStack.gatewayNodeSeeds(GATEWAY_SEED_NODE)).isNone,
+    true,
+  )
+
+  assert.equal(
+    await api.query.coldStack.gatewayNodeSeeds(GATEWAY_SEC_NODE),
+    GATEWAY_SEED_NODE,
+  )
+
+  assert.equal(
+    u8aToString(await api.query.coldStack.nodeURLs(GATEWAY_SEED_NODE)),
+    'http://gateway_seed.test',
+  )
 
   let uploadNumber = 0
   function upload(){
@@ -83,7 +126,7 @@ async function expectFail(promise, string){
       /*file_name_hash:*/     '0x' + crypto.createHash('sha256').update(number).digest('hex'),
       /*file_size_bytes:  */  FILE_SIZE,
       /*file_contents_hash:*/ '0x' + crypto.createHash('sha256').update(FILE_CONTENTS).digest('hex'),
-      /*gateway_eth_address:*/'0x2222222222222222222222222222222222222222',
+      /*gateway_eth_address:*/GATEWAY_SEED_NODE,
     )
   }
 
@@ -99,8 +142,6 @@ async function expectFail(promise, string){
   assert.ok(totalIssuance.eq(await api.query.coldStack.lockedFunds()))
 
   // Alice can upload file because she is admin
-
-  console.log("initialized")
 
   await expectOk(
     sendTxAndWait(
