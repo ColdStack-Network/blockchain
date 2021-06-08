@@ -1,5 +1,7 @@
 const assert = require('assert')
 const {ApiPromise, RPCProvider, WsProvider, Keyring} = require('@polkadot/api');
+const {u8aToString} = require('@polkadot/util/u8a/toString')
+const {BN} = require('bn.js')
 const crypto = require('crypto')
 
 const NODE_URL= process.env.NODE_URL;
@@ -93,8 +95,8 @@ async function expectFail(promise, string){
 
 
   // Total issuance is equal to locked funds
-  const totalIssuance = (await api.query.coldStack.totalIssuance()).toNumber()
-  assert.equal(totalIssuance, (await api.query.coldStack.lockedFunds()).toNumber())
+  const totalIssuance = await api.query.coldStack.totalIssuance()
+  assert.ok(totalIssuance.eq(await api.query.coldStack.lockedFunds()))
 
   // Alice can upload file because she is admin
 
@@ -130,8 +132,13 @@ async function expectFail(promise, string){
   await expectOk(
     sendTxAndWait(
       alice,
-      api.tx.coldStack.grantFilePermission(bobEthAddress, bob.address)
+      api.tx.coldStack.grantFilePermission(bobEthAddress, bob.address, 'http://foo.bar')
     )
+  )
+
+  assert.equal(
+    u8aToString(await api.query.coldStack.nodeURLs(bobEthAddress)), 
+    'http://foo.bar'
   )
 
   console.log("alice granted file permission to bob")
@@ -199,7 +206,7 @@ async function expectFail(promise, string){
 
   // And locked funds is equal to `totalIssuance - 1`
 
-  assert.equal(totalIssuance - 1, (await api.query.coldStack.lockedFunds()).toNumber())
+  assert.ok(totalIssuance.sub(new BN(1)).eq(await api.query.coldStack.lockedFunds()))
 
   // Try to withdraw 2 from testAddress and get InsufficientFunds
 
@@ -230,7 +237,7 @@ async function expectFail(promise, string){
 
   // And locked funds eq to totalIssuance
 
-  assert.equal(totalIssuance, (await api.query.coldStack.lockedFunds()).toNumber())
+  assert.ok(totalIssuance.eq(await api.query.coldStack.lockedFunds()))
 
 
   console.log('Now deposit 10 to testAddress')
@@ -261,7 +268,7 @@ async function expectFail(promise, string){
   await expectFail(
     sendTxAndWait(
       bob,
-      api.tx.coldStack.grantBillingPermission(bobEthAddress, bob.address)
+      api.tx.coldStack.grantBillingPermission(bobEthAddress, bob.address, 'http://foo.bar')
     ),
     'coldStack.Unauthorized'
   )
@@ -285,7 +292,7 @@ async function expectFail(promise, string){
   await expectOk(
     sendTxAndWait(
       alice,
-      api.tx.coldStack.grantBillingPermission(bobEthAddress, bob.address)
+      api.tx.coldStack.grantBillingPermission(bobEthAddress, bob.address, 'http://foo.bar')
     )
   )
 
