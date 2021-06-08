@@ -1,3 +1,4 @@
+const assert = require('assert')
 const {ApiPromise, RPCProvider, WsProvider, Keyring} = require('@polkadot/api');
 const crypto = require('crypto')
 
@@ -24,18 +25,6 @@ async function expectFail(promise, string){
     return
   }
   throw new Error(`FAIL: expected error "${string}" but not caught`)
-}
-
-function assertEq(expected, actual){
-  if(expected != actual){
-    throw new Error('Expected ${expected} but actual is ${actual}')
-  }
-}
-
-function assert(cond, message){
-  if(!cond){
-    throw new Error(message)
-  }
 }
 
 (async () => {
@@ -99,13 +88,13 @@ function assert(cond, message){
   const testAddress = '0x1111111111111111111111111111111111111111'
   const testAddress2 = '0x5555555555555555555555555555555555555555'
 
-  assertEq((await api.query.coldStack.totalFileCount()).toNumber(), 0)
-  assertEq((await api.query.coldStack.totalFileSize()).toNumber(), 0)
+  assert.equal((await api.query.coldStack.totalFileCount()).toNumber(), 0)
+  assert.equal((await api.query.coldStack.totalFileSize()).toNumber(), 0)
 
 
   // Total issuance is equal to locked funds
   const totalIssuance = (await api.query.coldStack.totalIssuance()).toNumber()
-  assertEq(totalIssuance, (await api.query.coldStack.lockedFunds()).toNumber())
+  assert.equal(totalIssuance, (await api.query.coldStack.lockedFunds()).toNumber())
 
   // Alice can upload file because she is admin
 
@@ -118,8 +107,8 @@ function assert(cond, message){
     )
   )
 
-  assertEq((await api.query.coldStack.totalFileCount()).toNumber(), 1)
-  assertEq((await api.query.coldStack.totalFileSize()).toNumber(), FILE_SIZE)
+  assert.equal((await api.query.coldStack.totalFileCount()).toNumber(), 1)
+  assert.equal((await api.query.coldStack.totalFileSize()).toNumber(), FILE_SIZE)
 
   console.log("alice succeed to upload file")
 
@@ -191,7 +180,7 @@ function assert(cond, message){
 
   // testAddress has zero balance
 
-  assert((await api.query.coldStack.balances(testAddress)).eq(0), 'Unexpected balance')
+  assert.equal((await api.query.coldStack.balances(testAddress)).toNumber(), 0)
 
   // Deposit 1 to testAddress
 
@@ -206,11 +195,11 @@ function assert(cond, message){
 
   // now testAddress has balance eq to 1
 
-  assert((await api.query.coldStack.balances(testAddress)).eq(1), 'Unexpected balance')
+  assert.equal((await api.query.coldStack.balances(testAddress)).toNumber(), 1)
 
   // And locked funds is equal to `totalIssuance - 1`
 
-  assertEq(totalIssuance - 1, (await api.query.coldStack.lockedFunds()).toNumber())
+  assert.equal(totalIssuance - 1, (await api.query.coldStack.lockedFunds()).toNumber())
 
   // Try to withdraw 2 from testAddress and get InsufficientFunds
 
@@ -237,11 +226,11 @@ function assert(cond, message){
 
   // And get balance back to zero
 
-  assert((await api.query.coldStack.balances(testAddress)).eq(0), 'Unexpected balance')
+  assert.equal((await api.query.coldStack.balances(testAddress)).toNumber(), 0)
 
   // And locked funds eq to totalIssuance
 
-  assertEq(totalIssuance, (await api.query.coldStack.lockedFunds()).toNumber())
+  assert.equal(totalIssuance, (await api.query.coldStack.lockedFunds()).toNumber())
 
 
   console.log('Now deposit 10 to testAddress')
@@ -264,8 +253,8 @@ function assert(cond, message){
 
   console.log('balances should change')
 
-  assert((await api.query.coldStack.balances(testAddress)).eq(6), 'Unexpected balance')
-  assert((await api.query.coldStack.balances(testAddress2)).eq(4), 'Unexpected balance')
+  assert.equal((await api.query.coldStack.balances(testAddress)).toNumber(), 6)
+  assert.equal((await api.query.coldStack.balances(testAddress2)).toNumber(), 4)
 
   // Bob cannot give permissions to himself
 
