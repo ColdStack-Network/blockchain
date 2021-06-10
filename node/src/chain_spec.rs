@@ -135,28 +135,28 @@ fn testnet_genesis(
 ) -> GenesisConfig {
   let root_key_clone = root_key.clone();
 	GenesisConfig {
-		frame_system: Some(SystemConfig {
+		frame_system: SystemConfig {
 			// Add Wasm runtime to storage.
 			code: wasm_binary.to_vec(),
 			changes_trie_config: Default::default(),
-		}),
-		pallet_balances: Some(BalancesConfig {
+		},
+		pallet_balances: BalancesConfig {
 			// Configure endowed accounts with initial balance of 1 << 60.
 			balances: Vec::new(),
-		}),
-		pallet_aura: Some(AuraConfig {
+		},
+		pallet_aura: AuraConfig {
 			authorities: initial_authorities.iter().map(|x| (x.0.clone())).collect(),
-		}),
-		pallet_grandpa: Some(GrandpaConfig {
+		},
+		pallet_grandpa: GrandpaConfig {
 			authorities: initial_authorities.iter().map(|x| (x.1.clone(), 1)).collect(),
-		}),
-		pallet_sudo: Some(SudoConfig {
+		},
+		pallet_sudo: SudoConfig {
 			// Assign network admin rights.
 			key: root_key,
-		}),
-    pallet_template: Some(ColdStackConfig {
+		},
+    pallet_template: ColdStackConfig {
 			key: root_key_clone,
       total_issuance: 50_000_000u128 * u128::pow(10, 18),
-    })
+    }
 	}
 }
