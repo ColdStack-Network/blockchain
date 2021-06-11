@@ -71,6 +71,18 @@ async function expectFail(promise, string){
     })
   }
 
+  async function gatewayNodes(){
+    const nodeEntries = await api.query.coldStack.gatewayNodeSeeds.entries()
+    return Promise.all(nodeEntries.map(async ([k,v]) => {
+      const nodeAddress = k.args.toString('hex')
+      return {
+        nodeAddress,
+        seedAddress: v.isNone ? null : v.toString('hex'),
+        url: u8aToString(await api.query.coldStack.nodeURLs(nodeAddress)),
+      }
+    }))
+  }
+
   const FILE_CONTENTS = "loremipsum"
   const FILE_SIZE = FILE_CONTENTS.length
   const USER_ETH_ADDRESS = '0x3333333333333333333333333333333333333333'
@@ -103,19 +115,20 @@ async function expectFail(promise, string){
     )
   )
 
-  assert.equal(
-    (await api.query.coldStack.gatewayNodeSeeds(GATEWAY_SEED_NODE)).isNone,
-    true,
-  )
-
-  assert.equal(
-    await api.query.coldStack.gatewayNodeSeeds(GATEWAY_SEC_NODE),
-    GATEWAY_SEED_NODE,
-  )
-
-  assert.equal(
-    u8aToString(await api.query.coldStack.nodeURLs(GATEWAY_SEED_NODE)),
-    'http://gateway_seed.test',
+  assert.deepEqual(
+    await gatewayNodes(),
+    [
+      {
+        nodeAddress: GATEWAY_SEC_NODE,
+        seedAddress: GATEWAY_SEED_NODE,
+        url: 'http://gateway_sec.test'
+      },
+      {
+        nodeAddress: GATEWAY_SEED_NODE,
+        seedAddress: null,
+        url: 'http://gateway_seed.test'
+      }
+    ]
   )
 
   let uploadNumber = 0
