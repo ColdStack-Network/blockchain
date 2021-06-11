@@ -384,6 +384,6 @@ async function expectFail(promise, string){
 
   console.log('Tests passed')
 
-  process.exit(0)
+  await api.disconnect()
 
 })()
