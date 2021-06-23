@@ -324,10 +324,11 @@ pub mod pallet {
         Balances::<T>::insert(&account, value);
       } else {
         let current_balance = Balances::<T>::get(&account);
-        // TODO overflow?
+        // `current_balance + value` cannot overflow because it cannot be
+        // greater than total_issuance
         Balances::<T>::insert(&account, current_balance + value);
       }
-      // TODO comment why it cannot overflow
+      // `locked_funds` is more than `value` (see check earlier)
       LockedFunds::<T>::put(locked_funds - value);
       Self::deposit_event(Event::Deposit(account, value));
       Ok(().into())
@@ -354,7 +355,8 @@ pub mod pallet {
       ensure!(balance >= value, Error::<T>::InsufficientFunds);
       let next_balance = balance - value;
       Balances::<T>::insert(&account, next_balance);
-      // TODO comment why it can never overflow
+      // `locked_funds + value` cannot overflow because it cannot be greater
+      // than total_issuance
       LockedFunds::<T>::put(LockedFunds::<T>::get() + value);
       Self::deposit_event(Event::Withdraw(account, value));
       Ok(().into())
@@ -388,7 +390,8 @@ pub mod pallet {
         Balances::<T>::insert(&to, value);
       } else {
         let balance = Balances::<T>::get(&to);
-        // TODO overflow?
+        // `balance + value` cannot overflow because it always less than
+        // total_issuance
         Balances::<T>::insert(&to, balance + value);
       }
 
