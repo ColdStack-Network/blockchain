@@ -13,153 +13,153 @@ mod tests;
 
 #[frame_support::pallet]
 pub mod pallet {
-	use frame_support::{
+  use frame_support::{
     dispatch::DispatchResultWithPostInfo, 
     pallet_prelude::*,
     weights::{Pays},
   };
-	use frame_system::pallet_prelude::*;
+  use frame_system::pallet_prelude::*;
   use sp_std::vec::Vec;
 
-	/// Configure the pallet by specifying the parameters and types on which it depends.
-	#[pallet::config]
-	pub trait Config: frame_system::Config {
-		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-	}
+  /// Configure the pallet by specifying the parameters and types on which it depends.
+  #[pallet::config]
+  pub trait Config: frame_system::Config {
+    /// Because this pallet emits events, it depends on the runtime's definition of an event.
+    type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+  }
 
-	#[pallet::pallet]
-	#[pallet::generate_store(pub(super) trait Store)]
-	pub struct Pallet<T>(_);
+  #[pallet::pallet]
+  #[pallet::generate_store(pub(super) trait Store)]
+  pub struct Pallet<T>(_);
 
-	// The pallet's runtime storage items.
-	// https://substrate.dev/docs/en/knowledgebase/runtime/storage
-	#[pallet::storage]
-	#[pallet::getter(fn key)]
-	// Learn more about declaring storage items:
-	// https://substrate.dev/docs/en/knowledgebase/runtime/storage#declaring-storage-items
+  // The pallet's runtime storage items.
+  // https://substrate.dev/docs/en/knowledgebase/runtime/storage
+  #[pallet::storage]
+  #[pallet::getter(fn key)]
+  // Learn more about declaring storage items:
+  // https://substrate.dev/docs/en/knowledgebase/runtime/storage#declaring-storage-items
   pub type Key<T: Config> = StorageValue<_, T::AccountId, ValueQuery>;
 
-	#[pallet::storage]
-	#[pallet::getter(fn total_file_count)]
+  #[pallet::storage]
+  #[pallet::getter(fn total_file_count)]
   pub type TotalFileCount<T: Config> = StorageValue<_, u128, ValueQuery>;
 
-	#[pallet::storage]
-	#[pallet::getter(fn total_file_size)]
+  #[pallet::storage]
+  #[pallet::getter(fn total_file_size)]
   pub type TotalFileSize<T: Config> = StorageValue<_, u128, ValueQuery>;
 
-	#[pallet::storage]
-	#[pallet::getter(fn total_issuance)]
+  #[pallet::storage]
+  #[pallet::getter(fn total_issuance)]
   pub type TotalIssuance<T: Config> = StorageValue<_, u128, ValueQuery>;
 
-	#[pallet::storage]
-	#[pallet::getter(fn locked_funds)]
+  #[pallet::storage]
+  #[pallet::getter(fn locked_funds)]
   pub type LockedFunds<T: Config> = StorageValue<_, u128, ValueQuery>;
 
-	#[pallet::storage]
-	pub type Balances<T: Config> = StorageMap<
-		_,
-		Blake2_128Concat,
-		Vec<u8>,
-		u128,
-		ValueQuery
-	>;
+  #[pallet::storage]
+  pub type Balances<T: Config> = StorageMap<
+    _,
+    Blake2_128Concat,
+    Vec<u8>,
+    u128,
+    ValueQuery
+  >;
 
   /*
     Map node eth address -> node url
   */
-	#[pallet::storage]
-	pub type NodeURLs<T: Config> = StorageMap<
-		_,
-		Blake2_128Concat,
-		Vec<u8>,
-		Vec<u8>,
-		ValueQuery
-	>;
+  #[pallet::storage]
+  pub type NodeURLs<T: Config> = StorageMap<
+    _,
+    Blake2_128Concat,
+    Vec<u8>,
+    Vec<u8>,
+    ValueQuery
+  >;
 
-	#[pallet::storage]
-	pub type FilePermissionOwnersByETHAddress<T: Config> = StorageMap<
-		_,
-		Blake2_128Concat,
-		Vec<u8>,
-		T::AccountId,
-		ValueQuery
-	>;
+  #[pallet::storage]
+  pub type FilePermissionOwnersByETHAddress<T: Config> = StorageMap<
+    _,
+    Blake2_128Concat,
+    Vec<u8>,
+    T::AccountId,
+    ValueQuery
+  >;
 
-	#[pallet::storage]
-	pub type FilePermissionOwnersByAccountId<T: Config> = StorageMap<
-		_,
-		Blake2_128Concat,
-		T::AccountId,
-		Vec<u8>,
-		ValueQuery
-	>;
+  #[pallet::storage]
+  pub type FilePermissionOwnersByAccountId<T: Config> = StorageMap<
+    _,
+    Blake2_128Concat,
+    T::AccountId,
+    Vec<u8>,
+    ValueQuery
+  >;
 
-	#[pallet::storage]
-	pub type BillingPermissionOwnersByETHAddress<T: Config> = StorageMap<
-		_,
-		Blake2_128Concat,
-		Vec<u8>,
-		T::AccountId,
-		ValueQuery
-	>;
+  #[pallet::storage]
+  pub type BillingPermissionOwnersByETHAddress<T: Config> = StorageMap<
+    _,
+    Blake2_128Concat,
+    Vec<u8>,
+    T::AccountId,
+    ValueQuery
+  >;
 
-	#[pallet::storage]
-	pub type BillingPermissionOwnersByAccountId<T: Config> = StorageMap<
-		_,
-		Blake2_128Concat,
-		T::AccountId,
-		Vec<u8>,
-		ValueQuery
-	>;
+  #[pallet::storage]
+  pub type BillingPermissionOwnersByAccountId<T: Config> = StorageMap<
+    _,
+    Blake2_128Concat,
+    T::AccountId,
+    Vec<u8>,
+    ValueQuery
+  >;
 
   /*
     Map gateway node address -> seed gateway node address
   */
-	#[pallet::storage]
-	pub type GatewayNodeSeeds<T: Config> = StorageMap<
-		_,
-		Blake2_128Concat,
-		Vec<u8>,
-		Option<Vec<u8>>,
-		ValueQuery
-	>;
+  #[pallet::storage]
+  pub type GatewayNodeSeeds<T: Config> = StorageMap<
+    _,
+    Blake2_128Concat,
+    Vec<u8>,
+    Option<Vec<u8>>,
+    ValueQuery
+  >;
 
-	#[pallet::genesis_config]
-	pub struct GenesisConfig<T: Config> {
-		pub key: T::AccountId,
+  #[pallet::genesis_config]
+  pub struct GenesisConfig<T: Config> {
+    pub key: T::AccountId,
     pub total_issuance: u128,
-	}
+  }
 
-	#[cfg(feature = "std")]
-	impl<T: Config> Default for GenesisConfig<T> {
-		fn default() -> Self {
-			Self {
-				key: Default::default(),
+  #[cfg(feature = "std")]
+  impl<T: Config> Default for GenesisConfig<T> {
+    fn default() -> Self {
+      Self {
+        key: Default::default(),
         total_issuance: Default::default(),
-			}
-		}
-	}
+      }
+    }
+  }
 
-	#[pallet::genesis_build]
-	impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
-		fn build(&self) {
-			<Key<T>>::put(&self.key);
-			<TotalFileCount<T>>::put(0);
-			<TotalFileSize<T>>::put(0);
+  #[pallet::genesis_build]
+  impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
+    fn build(&self) {
+      <Key<T>>::put(&self.key);
+      <TotalFileCount<T>>::put(0);
+      <TotalFileSize<T>>::put(0);
       <TotalIssuance<T>>::put(&self.total_issuance);
       <LockedFunds<T>>::put(&self.total_issuance);
-		}
-	}
+    }
+  }
 
-	// Pallets use events to inform users when important changes are made.
-	// https://substrate.dev/docs/en/knowledgebase/runtime/events
-	#[pallet::event]
-	#[pallet::metadata(T::AccountId = "AccountId")]
-	#[pallet::generate_deposit(pub(super) fn deposit_event)]
-	pub enum Event<T: Config> {
-		/// Event documentation should end with an array that provides descriptive names for event
-		/// parameters. [something, who]
+  // Pallets use events to inform users when important changes are made.
+  // https://substrate.dev/docs/en/knowledgebase/runtime/events
+  #[pallet::event]
+  #[pallet::metadata(T::AccountId = "AccountId")]
+  #[pallet::generate_deposit(pub(super) fn deposit_event)]
+  pub enum Event<T: Config> {
+    /// Event documentation should end with an array that provides descriptive names for event
+    /// parameters. [something, who]
     // TODO pass custom struct to event?
     Upload(
       /*user_eth_address*/     Vec<u8>,
@@ -190,31 +190,31 @@ pub mod pallet {
     BillingPermissionGranted(Vec<u8>, T::AccountId, Vec<u8>),
     BillingPermissionRevoked(Vec<u8>, T::AccountId),
     GatewayNodeRegistered(Vec<u8>, Option<Vec<u8>>, Vec<u8>),
-	}
+  }
 
-	// Errors inform users that something went wrong.
-	#[pallet::error]
-	pub enum Error<T> {
+  // Errors inform users that something went wrong.
+  #[pallet::error]
+  pub enum Error<T> {
     InvalidArguments,
     Unauthorized,
     InsufficientIssuance,
     InsufficientFunds,
-	}
+  }
 
-	#[pallet::hooks]
-	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
-
-
+  #[pallet::hooks]
+  impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
 
 
-	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
-	// These functions materialize as "extrinsics", which are often compared to transactions.
-	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
-	#[pallet::call]
-	impl<T: Config> Pallet<T> {
 
-		#[pallet::weight((0, Pays::No))]
-		pub fn upload(origin: OriginFor<T>, 
+
+  // Dispatchable functions allows users to interact with the pallet and invoke state changes.
+  // These functions materialize as "extrinsics", which are often compared to transactions.
+  // Dispatchable functions must be annotated with a weight and must return a DispatchResult.
+  #[pallet::call]
+  impl<T: Config> Pallet<T> {
+
+    #[pallet::weight((0, Pays::No))]
+    pub fn upload(origin: OriginFor<T>, 
       user_eth_address: Vec<u8>,
       file_name_hash: Vec<u8>,
       file_size_bytes: u128,
@@ -251,10 +251,10 @@ pub mod pallet {
       ));
 
       Ok(().into())
-		}
+    }
 
-		#[pallet::weight((0, Pays::No))]
-		pub fn download(origin: OriginFor<T>, 
+    #[pallet::weight((0, Pays::No))]
+    pub fn download(origin: OriginFor<T>, 
       user_eth_address: Vec<u8>,
       file_name_hash: Vec<u8>,
       file_size_bytes: u128,
@@ -288,9 +288,9 @@ pub mod pallet {
       ));
 
       Ok(().into())
-		}
+    }
 
-		#[pallet::weight((0, Pays::No))]
+    #[pallet::weight((0, Pays::No))]
     fn delete(origin: OriginFor<T>, 
       user_eth_address: Vec<u8>, 
       file_name_hash: Vec<u8>,
@@ -319,7 +319,7 @@ pub mod pallet {
       Ok(().into())
     }
 
-		#[pallet::weight((0, Pays::No))]
+    #[pallet::weight((0, Pays::No))]
     fn deposit(origin: OriginFor<T>,
       account: Vec<u8>, value: u128
     ) -> DispatchResultWithPostInfo {
@@ -352,7 +352,7 @@ pub mod pallet {
       Ok(().into())
     }
 
-		#[pallet::weight((0, Pays::No))]
+    #[pallet::weight((0, Pays::No))]
     fn withdraw(origin: OriginFor<T>,
       account: Vec<u8>, value: u128
     ) -> DispatchResultWithPostInfo {
@@ -379,7 +379,7 @@ pub mod pallet {
       Ok(().into())
     }
 
-		#[pallet::weight((0, Pays::No))]
+    #[pallet::weight((0, Pays::No))]
     fn transfer(origin: OriginFor<T>,
       from: Vec<u8>, 
       to: Vec<u8>, 
@@ -415,7 +415,7 @@ pub mod pallet {
       Ok(().into())
     }
 
-		#[pallet::weight((0, Pays::No))]
+    #[pallet::weight((0, Pays::No))]
     fn grant_file_permission(origin: OriginFor<T>,
       eth_address: Vec<u8>, 
       account_id: T::AccountId,
@@ -437,7 +437,7 @@ pub mod pallet {
       Ok(().into())
     }
 
-		#[pallet::weight((0, Pays::No))]
+    #[pallet::weight((0, Pays::No))]
     fn grant_billing_permission(origin: OriginFor<T>,
       eth_address: Vec<u8>, 
       account_id: T::AccountId,
@@ -459,7 +459,7 @@ pub mod pallet {
       Ok(().into())
     }
 
-		#[pallet::weight((0, Pays::No))]
+    #[pallet::weight((0, Pays::No))]
     fn revoke_file_permission(origin: OriginFor<T>,
       eth_address: Vec<u8>, 
     ) -> DispatchResultWithPostInfo {
@@ -474,7 +474,7 @@ pub mod pallet {
       Ok(().into())
     }
 
-		#[pallet::weight((0, Pays::No))]
+    #[pallet::weight((0, Pays::No))]
     fn revoke_billing_permission(origin: OriginFor<T>,
       eth_address: Vec<u8>, 
     ) -> DispatchResultWithPostInfo {
@@ -489,7 +489,7 @@ pub mod pallet {
       Ok(().into())
     }
 
-		#[pallet::weight((0, Pays::No))]
+    #[pallet::weight((0, Pays::No))]
     fn register_gateway_node(origin: OriginFor<T>,
       node_eth_address: Vec<u8>, 
       seed_eth_address: Option<Vec<u8>>,
@@ -512,5 +512,5 @@ pub mod pallet {
       Ok(().into())
     }
 
-	}
+  }
 }
