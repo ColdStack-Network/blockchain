@@ -65,6 +65,195 @@ First build and then
 
 ## API
 
+Node.js client for blockchain is https://polkadot.js.org/docs/api/
+
+You start by initializing `api` object (see docs). Then you can access storage
+items and send transactions
+
+### Common types
+
+#### `ETHAddress`
+
+Ethereum address. In blockchain runtime it is represented as `Vec<u8>`. It is
+returned from api as `Uint8Array`. You can pass it to api as `Uint8Array`,
+`Buffer` or hex-encoded string. Note that hex-encoded string must start with
+leading `'0x'`. Length is 20 bytes.
+
+#### `Hash`. 
+
+32-bytes long hash. In blockchain runtime it is represented as `Vec<u8>`. It is
+returned from api as `Uint8Array`. You can pass it to api as `Uint8Array`,
+`Buffer` or hex-encoded string. Note that hex-encoded string must start with
+leading `'0x'`.
+
+#### `AccountId`
+
+Built-in substrate type
+
+#### `Option`
+
+https://polkadot.js.org/docs/api/start/types.basics#working-with-optiontype
+
+#### Number
+
+https://polkadot.js.org/docs/api/start/types.basics#working-with-numbers
+
+### Storage items
+
+Most of data in blockchain is stored in storage maps. Storage map support the
+following operations:
+
+- get value by key
+- get all entries
+
+See docs https://polkadot.js.org/docs/api/start/api.query
+
+All storage functions are async and return value wrapped to promise
+
+#### `api.query.coldStack.key(): AccountId`
+
+Admin account key. Constant value that is set in genesis.
+
+#### `api.query.coldStack.totalIssuance(): number`
+
+Constant value equal to total issuance of ColdStack token in Ethereum.
+
+#### `api.query.coldStack.lockedFunds(): number`
+
+Locked funds
+
+#### `api.query.coldStack.balances(address: ETHAddress): number`
+
+Balance of address
+
+#### `api.query.coldStack.nodeURLs(address: ETHAddress): string`
+
+URL of node for given address
+
+#### `api.query.coldStack.filePermissionOwnersByETHAddress(address: ETHAddress): AccountId`
+
+Substrate account of file node by eth address
+
+#### `api.query.coldStack.filePermissionOwnersByAccountId(account: AccountId): ETHAddress`
+
+eth address of file node by substrate account
+
+#### `api.query.coldStack.billingPermissionOwnersByETHAddress(address: ETHAddress): AccountId`
+
+Substrate account of billing node by eth address
+
+#### `api.query.coldStack.billingPermissionOwnersByAccountId(account: AccountId): ETHAddress`
+
+eth address of billing node by substrate account
+
+#### `api.query.coldStack.gatewayNodeSeeds(address: ETHAddress): Option<ETHAddress>`
+
+Get seed of gateway node by gateway node address
+
+### Transactions
+
+#### upload
+
+```
+api.tx.coldStack.upload(
+  user_eth_address: ETHAddress,
+  file_name_hash: Hash,
+  file_size_bytes: number,
+  file_contents_hash: Hash,
+  gateway_eth_address: Hash,
+)
+```
+
+#### download
+```
+api.tx.coldStack.download(
+  user_eth_address: ETHAddress,
+  file_name_hash: Hash,
+  file_size_bytes: number,
+  file_contents_hash: Hash,
+  gateway_eth_address: Hash,
+)
+```
+
+#### delete
+```
+api.tx.coldStack.delete(
+  user_eth_address: ETHAddress,
+  file_name_hash: Hash,
+)
+```
+
+#### deposit
+```
+api.tx.coldStack.deposit(
+  account: ETHAddress,
+  value: number,
+)
+```
+
+#### withdraw
+```
+api.tx.coldStack.withdraw(
+  account: ETHAddress,
+  value: number,
+)
+```
+
+#### transfer
+```
+api.tx.coldStack.withdraw(
+  from: ETHAddress,
+  to: ETHAddress,
+  value: number,
+)
+```
+
+#### grantFilePermission
+
+```
+api.tx.coldStack.grantFilePermission(
+  eth_address: ETHAddress,
+  account_id: AccountId,
+  node_url: string,
+)
+```
+
+#### grantBillingPermission
+
+```
+api.tx.coldStack.grantBillingPermission(
+  eth_address: ETHAddress,
+  account_id: AccountId,
+  node_url: string,
+)
+```
+
+#### revokeFilePermission
+
+```
+api.tx.coldStack.revokeFilePermission(
+  eth_address: ETHAddress,
+)
+```
+
+#### revokeBillingPermission
+
+```
+api.tx.coldStack.revokeBillingPermission(
+  eth_address: ETHAddress,
+)
+```
+
+#### registerGatewayNode
+
+```
+api.tx.coldStack.registerGatewayNode(
+  node_eth_address: ETHAddress,
+  seed_eth_address: Option<ETHAddress>,
+  node_url: string,
+)
+```
+
 ### Get list of gateway nodes:
 
 ```
