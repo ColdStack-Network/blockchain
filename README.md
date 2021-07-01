@@ -201,7 +201,7 @@ api.tx.coldStack.withdraw(
 
 #### transfer
 ```
-api.tx.coldStack.withdraw(
+api.tx.coldStack.transfer(
   from: ETHAddress,
   to: ETHAddress,
   value: number,
