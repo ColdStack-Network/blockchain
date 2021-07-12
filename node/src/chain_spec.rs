@@ -141,8 +141,11 @@ fn testnet_genesis(
 			changes_trie_config: Default::default(),
 		},
 		balances: BalancesConfig {
-			// Configure endowed accounts with initial balance of 1 << 60.
-			balances: Vec::new(),
+      // Do not endow usual accounts (Alice, Bob etc) to test that transactions
+      // in coldstack pallet have no weight
+      balances: vec![
+				get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+			].iter().cloned().map(|k|(k, 1 << 60)).collect(),
 		},
 		aura: AuraConfig {
 			authorities: initial_authorities.iter().map(|x| (x.0.clone())).collect(),
