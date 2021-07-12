@@ -32,6 +32,11 @@ docker push coldstack/privatechain
 Docker image built and pushed in a github worflow. See
 .github/workflows/publish-docker.yml
 
+### Tags
+
+Tag name should correspond to `spec_version` (see [runtime
+upgrades](#runtime-upgrades) for details).
+
 ## Run docker image
 
 Run in dev mode
@@ -298,6 +303,14 @@ where
 # Production deployment
 
 [Production deployment](./prod.md)
+
+# Runtime upgrades
+
+Blockchain runtime (including ColdStack-specific code) could be upgraded by API
+call, without redeploying blockchain nodes. See
+https://substrate.dev/docs/en/tutorials/forkless-upgrade to learn mode about
+runtime upgrades. Note that you must bump `spec_version` in
+[./runtime/src/lib.rs](./runtime/src/lib.rs) to trigger runtime upgrade.
 
 # Substrate Node Template
 
