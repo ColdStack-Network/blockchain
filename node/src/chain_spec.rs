@@ -154,7 +154,7 @@ fn testnet_genesis(
 			// Assign network admin rights.
 			key: root_key,
 		},
-    pallet_template: ColdStackConfig {
+    cold_stack: ColdStackConfig {
 			key: root_key_clone,
       total_issuance: 50_000_000u128 * u128::pow(10, 18),
     }

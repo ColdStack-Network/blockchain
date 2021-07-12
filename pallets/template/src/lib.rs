@@ -272,7 +272,7 @@ pub mod pallet {
     }
 
     #[pallet::weight((0, Pays::No))]
-    fn delete(origin: OriginFor<T>, 
+    pub fn delete(origin: OriginFor<T>, 
       user_eth_address: Vec<u8>, 
       file_name_hash: Vec<u8>,
     ) -> DispatchResultWithPostInfo {
@@ -301,7 +301,7 @@ pub mod pallet {
     }
 
     #[pallet::weight((0, Pays::No))]
-    fn deposit(origin: OriginFor<T>,
+    pub fn deposit(origin: OriginFor<T>,
       account: Vec<u8>, value: u128
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
@@ -335,7 +335,7 @@ pub mod pallet {
     }
 
     #[pallet::weight((0, Pays::No))]
-    fn withdraw(origin: OriginFor<T>,
+    pub fn withdraw(origin: OriginFor<T>,
       account: Vec<u8>, value: u128
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
@@ -363,7 +363,7 @@ pub mod pallet {
     }
 
     #[pallet::weight((0, Pays::No))]
-    fn transfer(origin: OriginFor<T>,
+    pub fn transfer(origin: OriginFor<T>,
       from: Vec<u8>, 
       to: Vec<u8>, 
       value: u128,
@@ -400,7 +400,7 @@ pub mod pallet {
     }
 
     #[pallet::weight((0, Pays::No))]
-    fn grant_file_permission(origin: OriginFor<T>,
+    pub fn grant_file_permission(origin: OriginFor<T>,
       eth_address: Vec<u8>, 
       account_id: T::AccountId,
       node_url: Vec<u8>,
@@ -422,7 +422,7 @@ pub mod pallet {
     }
 
     #[pallet::weight((0, Pays::No))]
-    fn grant_billing_permission(origin: OriginFor<T>,
+    pub fn grant_billing_permission(origin: OriginFor<T>,
       eth_address: Vec<u8>, 
       account_id: T::AccountId,
       node_url: Vec<u8>,
@@ -444,7 +444,7 @@ pub mod pallet {
     }
 
     #[pallet::weight((0, Pays::No))]
-    fn revoke_file_permission(origin: OriginFor<T>,
+    pub fn revoke_file_permission(origin: OriginFor<T>,
       eth_address: Vec<u8>, 
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
@@ -459,7 +459,7 @@ pub mod pallet {
     }
 
     #[pallet::weight((0, Pays::No))]
-    fn revoke_billing_permission(origin: OriginFor<T>,
+    pub fn revoke_billing_permission(origin: OriginFor<T>,
       eth_address: Vec<u8>, 
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
@@ -474,7 +474,7 @@ pub mod pallet {
     }
 
     #[pallet::weight((0, Pays::No))]
-    fn register_gateway_node(origin: OriginFor<T>,
+    pub fn register_gateway_node(origin: OriginFor<T>,
       node_eth_address: Vec<u8>, 
       seed_eth_address: Option<Vec<u8>>,
       node_url: Vec<u8>,
