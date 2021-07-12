@@ -13,6 +13,7 @@ parser.add_argument('--api-node', help='api node ssh address', nargs='+', defaul
 parser.add_argument('--boot-node-addr', help='first (boot) node ip address', required=True)
 parser.add_argument('--secrets', help='secrets file', required=True)
 parser.add_argument('--env', help='production or staging', choices=['production', 'staging'], required=True)
+parser.add_argument('--tag', help='tag of docker image', required=True)
 args = parser.parse_args()
 
 print('Parsed CLI args', args)
@@ -43,14 +44,9 @@ def prepare_blockchain_dir(host):
     sudo=True
   )
 
-def pull_newest_image(host):
-  input = "docker pull coldstack/privatechain"
-  run_ssh(host, input)
-
 def init_node(host):
   print('Initialize node', host)
   prepare_blockchain_dir(host)
-  pull_newest_image(host)
 
 def init_keystore(host):
   print('Initialize keystore', host)
@@ -70,7 +66,7 @@ def init_keystore(host):
         -v /var/blockchain:/data \
         -v /tmp:/keys \
         --rm \
-        coldstack/privatechain key insert \
+        coldstack/privatechain:{args.tag} key insert \
         --chain /chainspec/{args.env}.json \
         --key-type {key_type}  \
         --scheme {scheme} \
@@ -92,7 +88,7 @@ def run_api_node(host):
   -p 9933:9933 \
   -p 9944:9944 \
   -v /var/blockchain:/data \
-  coldstack/privatechain \
+  coldstack/privatechain:{args.tag} \
   --name 'Coldstack Public {args.env}' \
   --pruning archive \
   --no-telemetry --no-prometheus \
@@ -117,7 +113,7 @@ def run_validator_node(host, is_boot_node):
   --restart unless-stopped \
   -p 30333:30333 \
   -v /var/blockchain:/data \
-  coldstack/privatechain \
+  coldstack/privatechain:{args.tag} \
   --validator \
   --name 'Coldstack Validator {args.env}' \
   --pruning archive \
