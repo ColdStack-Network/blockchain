@@ -312,6 +312,11 @@ https://substrate.dev/docs/en/tutorials/forkless-upgrade to learn mode about
 runtime upgrades. Note that you must bump `spec_version` in
 [./runtime/src/lib.rs](./runtime/src/lib.rs) to trigger runtime upgrade.
 
+To see some examples of runtime upgrades please checkout branch
+`runtime_upgrade_examples` (see
+[README](https://github.com/ColdStack-Network/blockchain/blob/runtime_upgrade_examples/runtime_upgrade_examples/README.md)
+for details)
+
 # Substrate Node Template
 
 Repository is forked from [Substrate Node
