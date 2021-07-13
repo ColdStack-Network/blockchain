@@ -93,6 +93,7 @@ def run_api_node(host):
   --pruning archive \
   --no-telemetry --no-prometheus \
   --chain /chainspec/{args.env}.json \
+  --execution wasm \
   --port 30333   \
   --ws-port 9944 \
   --rpc-external \
@@ -119,6 +120,7 @@ def run_validator_node(host, is_boot_node):
   --pruning archive \
   --no-telemetry --no-prometheus \
   --chain /chainspec/{args.env}.json \
+  --execution wasm \
   --port 30333 \
   "
   if is_boot_node:
