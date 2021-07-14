@@ -6,7 +6,7 @@ import json
 
 parser = argparse.ArgumentParser(description='Deploy blockchain')
 parser.add_argument('--validator-node', 
-  help='validator node ssh address. First node becomes boot node', 
+  help='validator node ssh address. First node becomes boot node and active validator.', 
   nargs='+'
 )
 parser.add_argument('--api-node', help='api node ssh address', nargs='+', default=[])
@@ -110,7 +110,7 @@ def run_api_node(host):
   run_ssh(host, input)
 
 
-def run_validator_node(host, is_boot_node):
+def run_validator_node(host, is_boot_node, is_validator):
   print('Run validator node on host', host, 'is_boot_node =', is_boot_node)
   if not args.with_existing_data:
     init_node(host)
@@ -121,7 +121,6 @@ def run_validator_node(host, is_boot_node):
   -p 30333:30333 \
   -v /var/blockchain:/data \
   coldstack/privatechain:{args.tag} \
-  --validator \
   --name 'Coldstack Validator {args.env}' \
   --pruning archive \
   --no-telemetry --no-prometheus \
@@ -129,6 +128,10 @@ def run_validator_node(host, is_boot_node):
   --execution wasm \
   --port 30333 \
   "
+  if is_validator:
+    input = f"{input} \
+      --validator \
+    "
   if is_boot_node:
     input = f"{input} \
      --node-key {secrets['nodekey']} \
@@ -143,7 +146,7 @@ def run_validator_node(host, is_boot_node):
 secrets = read_secrets_file()
 
 for i, host in enumerate(args.validator_node):
-  run_validator_node(host, is_boot_node = (i == 0))
+  run_validator_node(host, is_boot_node = (i == 0), is_validator = (i == 0))
 
 for host in args.api_node:
   run_api_node(host)
