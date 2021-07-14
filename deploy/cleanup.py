@@ -11,6 +11,10 @@ parser.add_argument('--node',
   nargs='+',
   required=True,
 )
+parser.add_argument('--preserve-data', 
+  help='Do not remove data, just remove container', 
+  action='store_true'
+)
 args = parser.parse_args()
 
 def run(command, input):
@@ -27,7 +31,9 @@ def run_ssh(host, input, sudo=False):
 
 for host in args.node:
   run_ssh(host, """
-    docker ps -aq --filter "ancestor=coldstack/privatechain" \
+    docker ps -a | grep coldstack/privatechain | awk '{print $1}' \
       | xargs -r  docker stop | xargs -r docker rm
-    sudo rm -rf /var/blockchain
   """)
+  
+  if not args.preserve_data:
+    run_ssh(host, "sudo rm -rf /var/blockchain")

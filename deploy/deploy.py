@@ -14,6 +14,10 @@ parser.add_argument('--boot-node-addr', help='first (boot) node ip address', req
 parser.add_argument('--secrets', help='secrets file', required=True)
 parser.add_argument('--env', help='production or staging', choices=['production', 'staging'], required=True)
 parser.add_argument('--tag', help='tag of docker image', required=True)
+parser.add_argument('--with-existing-data', 
+  help='Do not initialize data directory, just start containers', 
+  action='store_true'
+)
 args = parser.parse_args()
 
 print('Parsed CLI args', args)
@@ -80,7 +84,8 @@ def init_keystore(host):
 
 def run_api_node(host):
   print('Run API node on host', host)
-  init_node(host)
+  if not args.with_existing_data:
+    init_node(host)
   input = f"docker run \
   -d \
   --restart unless-stopped \
@@ -107,8 +112,9 @@ def run_api_node(host):
 
 def run_validator_node(host, is_boot_node):
   print('Run validator node on host', host, 'is_boot_node =', is_boot_node)
-  init_node(host)
-  init_keystore(host)
+  if not args.with_existing_data:
+    init_node(host)
+    init_keystore(host)
   input = f"docker run \
   -d \
   --restart unless-stopped \
