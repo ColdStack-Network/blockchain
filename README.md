@@ -296,11 +296,13 @@ Returns:
   {
     nodeAddress: '0x6666666666666666666666666666666666666666',
     seedAddress: '0x2222222222222222222222222222222222222222',
+    storage: 1,
     url: 'http://gateway_sec.test'
   },
   {
     nodeAddress: '0x2222222222222222222222222222222222222222',
     seedAddress: null,
+    storage: 2,
     url: 'http://gateway_seed.test'
   }
 ]
