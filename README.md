@@ -151,7 +151,7 @@ Substrate account of billing node by eth address
 
 eth address of billing node by substrate account
 
-#### `api.query.coldStack.gatewayNodeSeeds(address: ETHAddress): Option<ETHAddress>`
+#### `api.query.coldStack.gateways(address: ETHAddress): Gateway`
 
 Get seed of gateway node by gateway node address
 
@@ -264,13 +264,25 @@ api.tx.coldStack.registerGatewayNode(
 ```
 const {u8aToString} = require('@polkadot/util/u8a/toString')
 
+const api = await ApiPromise.create({ 
+  provider: wsProvider,
+  types: {
+    Gateway: {
+      address: 'Vec<u8>',
+      seedAddress: 'Option<Vec<u8>>',
+      storage: 'u8',
+    },
+  },
+})
+
 async function gatewayNodes(){
-  const nodeEntries = await api.query.coldStack.gatewayNodeSeeds.entries()
-  return Promise.all(nodeEntries.map(async ([k,v]) => {
-    const nodeAddress = k.args.toString('hex')
+  const nodeEntries = await api.query.coldStack.gateways.entries()
+  return Promise.all(nodeEntries.map(async ([_, gateway]) => {
+    const nodeAddress = gateway.address.toString('hex')
     return {
       nodeAddress,
-      seedAddress: v.isNone ? null : v.toString('hex'),
+      seedAddress: gateway.seedAddress.isNone ? null : gateway.seedAddress.toString('hex'),
+      storage: gateway.storage.toNumber(),
       url: u8aToString(await api.query.coldStack.nodeURLs(nodeAddress)),
     }
   }))

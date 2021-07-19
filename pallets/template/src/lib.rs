@@ -16,6 +16,7 @@ pub mod pallet {
     weights::{Pays},
   };
   use frame_system::pallet_prelude::*;
+  use codec::{Encode, Decode};
   use sp_std::vec::Vec;
 
   #[pallet::config]
@@ -106,15 +107,22 @@ pub mod pallet {
     ValueQuery
   >;
 
+  #[derive(Default, Clone, Debug, PartialEq, Encode, Decode)]
+  pub struct Gateway {
+    address: Vec<u8>,
+    seed_address: Option<Vec<u8>>,
+    storage: u8,
+  }
+
   /*
-    Map gateway node address -> seed gateway node address
+    Map gateway node address -> gateway
   */
   #[pallet::storage]
-  pub type GatewayNodeSeeds<T: Config> = StorageMap<
+  pub type Gateways<T: Config> = StorageMap<
     _,
     Blake2_128Concat,
     Vec<u8>,
-    Option<Vec<u8>>,
+    Gateway,
     ValueQuery
   >;
 
@@ -177,7 +185,7 @@ pub mod pallet {
     FilePermissionRevoked(Vec<u8>, T::AccountId),
     BillingPermissionGranted(Vec<u8>, T::AccountId, Vec<u8>),
     BillingPermissionRevoked(Vec<u8>, T::AccountId),
-    GatewayNodeRegistered(Vec<u8>, Option<Vec<u8>>, Vec<u8>),
+    GatewayNodeRegistered(Vec<u8>, Gateway),
   }
 
   #[pallet::error]
@@ -475,24 +483,25 @@ pub mod pallet {
 
     #[pallet::weight((0, Pays::No))]
     pub fn register_gateway_node(origin: OriginFor<T>,
-      node_eth_address: Vec<u8>, 
+      eth_address: Vec<u8>, 
       seed_eth_address: Option<Vec<u8>>,
+      storage: u8,
       node_url: Vec<u8>,
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
       ensure!(sender == Self::key(), Error::<T>::Unauthorized);
-      ensure!(node_eth_address.len() == 20, Error::<T>::InvalidArguments);
+      ensure!(eth_address.len() == 20, Error::<T>::InvalidArguments);
       if let Some(ref addr) = seed_eth_address {
         ensure!(addr.len() == 20, Error::<T>::InvalidArguments);
       }
-      /*
-        Ensure gateway node does not exist yet
-      */
-      ensure!(!GatewayNodeSeeds::<T>::contains_key(&node_eth_address), 
-                                        Error::<T>::InvalidArguments);
-      GatewayNodeSeeds::<T>::insert(&node_eth_address, &seed_eth_address);
-      NodeURLs::<T>::insert(&node_eth_address, &node_url);
-      Self::deposit_event(Event::GatewayNodeRegistered(node_eth_address, seed_eth_address, node_url));
+      let gateway = Gateway {
+        address: eth_address.clone(),
+        seed_address: seed_eth_address,
+        storage: storage,
+      };
+      Gateways::<T>::insert(eth_address.clone(), &gateway);
+      NodeURLs::<T>::insert(eth_address.clone(), &node_url);
+      Self::deposit_event(Event::GatewayNodeRegistered(eth_address, gateway));
       Ok(().into())
     }
 

@@ -35,7 +35,16 @@ async function expectFail(promise, string){
   const keyring = new Keyring({ type: 'sr25519' });
 
   const wsProvider = new WsProvider(NODE_URL)
-  const api = await ApiPromise.create({ provider: wsProvider });
+  const api = await ApiPromise.create({ 
+    provider: wsProvider,
+    types: {
+      Gateway: {
+        address: 'Vec<u8>',
+        seedAddress: 'Option<Vec<u8>>',
+        storage: 'u8',
+      },
+    },
+  });
 
   const alice = keyring.addFromUri('//Alice')
   const bob = keyring.addFromUri('//Bob')
@@ -72,12 +81,13 @@ async function expectFail(promise, string){
   }
 
   async function gatewayNodes(){
-    const nodeEntries = await api.query.coldStack.gatewayNodeSeeds.entries()
-    return Promise.all(nodeEntries.map(async ([k,v]) => {
-      const nodeAddress = k.args.toString('hex')
+    const nodeEntries = await api.query.coldStack.gateways.entries()
+    return Promise.all(nodeEntries.map(async ([_, gateway]) => {
+      const nodeAddress = gateway.address.toString('hex')
       return {
         nodeAddress,
-        seedAddress: v.isNone ? null : v.toString('hex'),
+        seedAddress: gateway.seedAddress.isNone ? null : gateway.seedAddress.toString('hex'),
+        storage: gateway.storage.toNumber(),
         url: u8aToString(await api.query.coldStack.nodeURLs(nodeAddress)),
       }
     }))
@@ -97,6 +107,7 @@ async function expectFail(promise, string){
       api.tx.coldStack.registerGatewayNode(
         GATEWAY_SEED_NODE,
         null,
+        1,
         'http://gateway_seed.test',
       )
     )
@@ -110,6 +121,7 @@ async function expectFail(promise, string){
       api.tx.coldStack.registerGatewayNode(
         GATEWAY_SEC_NODE,
         GATEWAY_SEED_NODE,
+        2,
         'http://gateway_sec.test',
       )
     )
@@ -121,11 +133,13 @@ async function expectFail(promise, string){
       {
         nodeAddress: GATEWAY_SEC_NODE,
         seedAddress: GATEWAY_SEED_NODE,
+        storage: 2,
         url: 'http://gateway_sec.test'
       },
       {
         nodeAddress: GATEWAY_SEED_NODE,
         seedAddress: null,
+        storage: 1,
         url: 'http://gateway_seed.test'
       }
     ]
