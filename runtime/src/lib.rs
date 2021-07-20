@@ -14,7 +14,9 @@ use sp_runtime::{
 };
 use sp_runtime::traits::{
 	BlakeTwo256, Block as BlockT, AccountIdLookup, Verify, IdentifyAccount, NumberFor,
+  OpaqueKeys
 };
+use frame_system::EnsureRoot;
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use pallet_grandpa::{AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList};
@@ -282,9 +284,11 @@ construct_runtime!(
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage},
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent},
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+    Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>},
+    ValidatorSet: validatorset::{Pallet, Call, Storage, Event<T>, Config<T>},
 		Aura: pallet_aura::{Pallet, Config<T>},
 		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		TransactionPayment: pallet_transaction_payment::{Pallet, Storage},
 		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
     Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>},
@@ -502,5 +506,23 @@ impl pallet_scheduler::Config for Runtime {
     type MaximumWeight = MaximumSchedulerWeight;
     type ScheduleOrigin = frame_system::EnsureRoot<AccountId>;
     type MaxScheduledPerBlock = MaxScheduledPerBlock;
+    type WeightInfo = ();
+}
+
+impl validatorset::Config for Runtime {
+    type Event = Event;
+    type AddRemoveOrigin = EnsureRoot<AccountId>;
+}
+
+impl pallet_session::Config for Runtime {
+    type SessionHandler = <opaque::SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
+    type ShouldEndSession = ValidatorSet;
+    type SessionManager = ValidatorSet;
+    type Event = Event;
+    type Keys = opaque::SessionKeys;
+    type NextSessionRotation = ValidatorSet;
+    type ValidatorId = <Self as frame_system::Config>::AccountId;
+    type ValidatorIdOf = validatorset::ValidatorOf<Self>;
+    type DisabledValidatorsThreshold = ();
     type WeightInfo = ();
 }

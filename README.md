@@ -331,6 +331,13 @@ To see some examples of runtime upgrades please checkout branch
 [README](https://github.com/ColdStack-Network/blockchain/blob/runtime_upgrade_examples/runtime_upgrade_examples/README.md)
 for details)
 
+# Add validator
+
+Blockchain is build with
+[substrate-validator-set](https://github.com/gautamdhameja/substrate-validator-set)
+pallet. It allows adding validators dynamically. See `add-validator-test`
+branch to see examples.
+
 # Substrate Node Template
 
 Repository is forked from [Substrate Node

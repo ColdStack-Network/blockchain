@@ -54,6 +54,8 @@ std = [
     'sp-transaction-pool/std',
     'sp-version/std',
     'pallet-scheduler/std',
+    'validatorset/std',
+    'pallet-session/std',
 ]
 [dependencies.codec]
 default-features = false
@@ -223,6 +225,18 @@ tag = 'monthly-2021-07'
 version = '3.0.0'
 
 [dependencies.pallet-scheduler]
+default-features = false
+git = 'https://github.com/paritytech/substrate.git'
+tag = 'monthly-2021-07'
+version = '3.0.0'
+
+[dependencies.validatorset]
+default-features = false
+package = 'substrate-validator-set'
+git = 'https://github.com/gautamdhameja/substrate-validator-set.git'
+version = '3.0.1'
+
+[dependencies.pallet-session]
 default-features = false
 git = 'https://github.com/paritytech/substrate.git'
 tag = 'monthly-2021-07'

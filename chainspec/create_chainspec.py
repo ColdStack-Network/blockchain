@@ -57,15 +57,30 @@ def gen_chainspec():
 
   runtime = chainspec['genesis']['runtime']
 
-  runtime['palletAura']['authorities'] = [k['sr25519']['addr'] for k in keys]
-  runtime['palletGrandpa']['authorities'] = [[k['ed25519']['addr'], 1] for k in keys]
-
-  runtime['palletBalances']['balances'] = [
-    [sudokey['sr25519']['addr'],  1152921504606846976],
+  runtime['validatorSet']['validators'] = [k['sr25519']['addr'] for k in keys]
+  runtime['session']['keys'] = [
+    [ 
+      k['sr25519']['addr'],
+      k['sr25519']['addr'],
+      {
+        "aura":    k['sr25519']['addr'],
+        "grandpa": k['ed25519']['addr'],
+      },
+    ]
+    for k in keys
   ]
 
-  runtime['palletSudo']['key'] = sudokey['sr25519']['addr']
-  runtime['palletTemplate']['key'] = adminkey['sr25519']['addr']
+  runtime['balances']['balances'] = [
+    [sudokey['sr25519']['addr'],  1152921504606846976],
+  ]
+  for k in keys:
+    runtime['balances']['balances'].append(
+      [k['sr25519']['addr'],  1152921504606846976],
+    )
+
+
+  runtime['sudo']['key'] = sudokey['sr25519']['addr']
+  runtime['coldStack']['key'] = adminkey['sr25519']['addr']
 
   return chainspec
 
