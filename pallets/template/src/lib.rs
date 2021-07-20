@@ -185,7 +185,7 @@ pub mod pallet {
     FilePermissionRevoked(Vec<u8>, T::AccountId),
     BillingPermissionGranted(Vec<u8>, T::AccountId, Vec<u8>),
     BillingPermissionRevoked(Vec<u8>, T::AccountId),
-    GatewayNodeRegistered(Vec<u8>, Gateway),
+    GatewayNodeRegistered(Vec<u8>, Option<Vec<u8>>, u8, Vec<u8>),
   }
 
   #[pallet::error]
@@ -496,12 +496,17 @@ pub mod pallet {
       }
       let gateway = Gateway {
         address: eth_address.clone(),
-        seed_address: seed_eth_address,
+        seed_address: seed_eth_address.clone(),
         storage: storage,
       };
       Gateways::<T>::insert(eth_address.clone(), &gateway);
       NodeURLs::<T>::insert(eth_address.clone(), &node_url);
-      Self::deposit_event(Event::GatewayNodeRegistered(eth_address, gateway));
+      Self::deposit_event(Event::GatewayNodeRegistered(
+        eth_address,
+        seed_eth_address,
+        storage,
+        node_url,
+      ));
       Ok(().into())
     }
 
