@@ -217,3 +217,16 @@ pip3 install substrate-interface
 
 Она должна быть доступна по адресу `https://blockchain-admin.coldstack.io`. Для
 стейджинга адреса такие же с точностью до домена второго уровня.
+
+## Healtcheck для API нод
+
+http-сервер для healthcheck API-ноды находится
+тут [./deploy/rpc_healthcheck/](./deploy/rpc_healthcheck/).
+
+Он собирается в докер-образ в github workflows. Название образа:
+`ghcr.io/coldstack-network/blockchain_rpc_healthcheck`
+
+ENV-переменные контейнера
+
+- PORT - порт на котором запускается http-сервер
+- NODE_URL - URL ws-интерфейса API-ноды
