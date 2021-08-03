@@ -122,7 +122,7 @@ SSH, и было бы непрактично все время вводить п
   --api-node stage-bc-api-1 stage-bc-api-2 \
   --boot-node-addr 52.77.253.1 \
   --secrets deploy/secrets/staging.json \
-  --env staging
+  --env stage
 ```
 
 Аргументы:
@@ -136,7 +136,7 @@ SSH, и было бы непрактично все время вводить п
 - `boot-node-addr` - адрес первой валидатор-ноды. Он будет указан в качестве
   аргумента для других нод.
 
-- `env` - `staging` или `production`
+- `env` - `stage` или `prod`
 
 - `secrets` - файл с секретами.
 

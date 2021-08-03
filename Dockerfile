@@ -17,7 +17,8 @@ LABEL description="This is the 2nd stage: a very small image where we copy the P
 ARG PROFILE=release
 COPY --from=builder /coldstack/target/$PROFILE/node-template /usr/local/bin/coldstack
 
-COPY chainspec/staging/chainspecRaw.json /chainspec/staging.json
+COPY chainspec/staging/chainspecRaw.json /chainspec/stage.json
+COPY chainspec/production/chainspecRaw.json /chainspec/prod.json
 
 RUN useradd -m -u 1000 -U -s /bin/sh -d /coldstack coldstack && \
 	mkdir -p /coldstack/.local/share && \

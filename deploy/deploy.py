@@ -12,7 +12,7 @@ parser.add_argument('--validator-node',
 parser.add_argument('--api-node', help='api node ssh address', nargs='+', default=[])
 parser.add_argument('--boot-node-addr', help='first (boot) node ip address', required=True)
 parser.add_argument('--secrets', help='secrets file', required=True)
-parser.add_argument('--env', help='production or staging', choices=['production', 'staging'], required=True)
+parser.add_argument('--env', help='production or staging', choices=['prod', 'stage'], required=True)
 parser.add_argument('--tag', help='tag of docker image', required=True)
 parser.add_argument('--with-existing-data', 
   help='Do not initialize data directory, just start containers', 
