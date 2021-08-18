@@ -203,9 +203,10 @@ pub mod pallet {
   impl<T: Config> Pallet<T> {
 
     #[pallet::weight((0, Pays::No))]
-    pub fn upload(origin: OriginFor<T>, 
+    pub fn upload(origin: OriginFor<T>,
       user_eth_address: Vec<u8>,
       file_name_hash: Vec<u8>,
+			file_storage_class: u8,
       file_size_bytes: u128,
       file_contents_hash: Vec<u8>,
       gateway_eth_address: Vec<u8>,
@@ -219,7 +220,8 @@ pub mod pallet {
         FilePermissionOwnersByAccountId::<T>::contains_key(&sender);
 
       let filenode_eth_address = FilePermissionOwnersByAccountId::<T>::get(&sender);
-
+			let file_storage_class = 0;
+			
       ensure!(has_permission, Error::<T>::Unauthorized);
 
       ensure!(user_eth_address.len() == 20, Error::<T>::InvalidArguments);
@@ -231,6 +233,7 @@ pub mod pallet {
       <TotalFileSize<T>>::put(Self::total_file_size() + file_size_bytes);
 
       Self::deposit_event(Event::Upload(
+				file_storage_class,
         user_eth_address, 
         file_name_hash, 
         file_size_bytes,
