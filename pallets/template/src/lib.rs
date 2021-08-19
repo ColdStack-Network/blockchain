@@ -233,13 +233,13 @@ pub mod pallet {
       <TotalFileSize<T>>::put(Self::total_file_size() + file_size_bytes);
 
       Self::deposit_event(Event::Upload(
-				file_storage_class,
         user_eth_address, 
         file_name_hash, 
         file_size_bytes,
         file_contents_hash, 
         gateway_eth_address,
         filenode_eth_address,
+        file_storage_class
       ));
 
       Ok(().into())
