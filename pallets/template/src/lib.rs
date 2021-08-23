@@ -206,10 +206,11 @@ pub mod pallet {
     pub fn upload(origin: OriginFor<T>,
       user_eth_address: Vec<u8>,
       file_name_hash: Vec<u8>,
-			file_storage_class: u8,
       file_size_bytes: u128,
       file_contents_hash: Vec<u8>,
       gateway_eth_address: Vec<u8>,
+      file_storage_class: u8,
+      is_forced: bool,
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
 
@@ -239,7 +240,8 @@ pub mod pallet {
         file_contents_hash, 
         gateway_eth_address,
         filenode_eth_address,
-        file_storage_class
+        file_storage_class,
+        is_forced,
       ));
 
       Ok(().into())
