@@ -233,6 +233,7 @@ version = '3.0.0'
 [dependencies.validatorset]
 default-features = false
 package = 'substrate-validator-set'
+tag = 'monthly-2021-07'
 git = 'https://github.com/gautamdhameja/substrate-validator-set.git'
 version = '3.0.1'
 
