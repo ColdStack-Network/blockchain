@@ -223,9 +223,7 @@ pub mod pallet {
         FilePermissionOwnersByAccountId::<T>::contains_key(&sender);
 
       let filenode_eth_address = FilePermissionOwnersByAccountId::<T>::get(&sender);
-      let file_storage_class = 0;
-      let is_forced = false;
-
+ 
       ensure!(has_permission, Error::<T>::Unauthorized);
 
       ensure!(user_eth_address.len() == 20, Error::<T>::InvalidArguments);
