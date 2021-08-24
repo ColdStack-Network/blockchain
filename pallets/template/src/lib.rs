@@ -11,7 +11,7 @@ mod tests;
 #[frame_support::pallet]
 pub mod pallet {
   use frame_support::{
-    dispatch::DispatchResultWithPostInfo, 
+    dispatch::DispatchResultWithPostInfo,
     pallet_prelude::*,
     weights::{Pays},
   };
@@ -164,6 +164,8 @@ pub mod pallet {
       /*file_contents_hash:*/  Vec<u8>,
       /*gateway_eth_address:*/ Vec<u8>,
       /*filenode_eth_address:*/Vec<u8>,
+	  /*file_storage_class:*/u8,
+	  /*is_forced:*/bool,
     ),
     Download(
       /*user_eth_address*/     Vec<u8>,
@@ -214,7 +216,7 @@ pub mod pallet {
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
 
-      let has_permission = 
+      let has_permission =
         // is admin
         sender == Self::key()
         ||
@@ -223,7 +225,7 @@ pub mod pallet {
       let filenode_eth_address = FilePermissionOwnersByAccountId::<T>::get(&sender);
       let file_storage_class = 0;
       let is_forced = 0;
-			
+
       ensure!(has_permission, Error::<T>::Unauthorized);
 
       ensure!(user_eth_address.len() == 20, Error::<T>::InvalidArguments);
@@ -235,10 +237,10 @@ pub mod pallet {
       <TotalFileSize<T>>::put(Self::total_file_size() + file_size_bytes);
 
       Self::deposit_event(Event::Upload(
-        user_eth_address, 
-        file_name_hash, 
+        user_eth_address,
+        file_name_hash,
         file_size_bytes,
-        file_contents_hash, 
+        file_contents_hash,
         gateway_eth_address,
         filenode_eth_address,
         file_storage_class,
@@ -249,7 +251,7 @@ pub mod pallet {
     }
 
     #[pallet::weight((0, Pays::No))]
-    pub fn download(origin: OriginFor<T>, 
+    pub fn download(origin: OriginFor<T>,
       user_eth_address: Vec<u8>,
       file_name_hash: Vec<u8>,
       file_size_bytes: u128,
@@ -258,7 +260,7 @@ pub mod pallet {
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
 
-      let has_permission = 
+      let has_permission =
         // is admin
         sender == Self::key()
         ||
@@ -274,10 +276,10 @@ pub mod pallet {
       ensure!(file_name_hash.len() == 32, Error::<T>::InvalidArguments);
 
       Self::deposit_event(Event::Download(
-        user_eth_address, 
-        file_name_hash, 
+        user_eth_address,
+        file_name_hash,
         file_size_bytes,
-        file_contents_hash, 
+        file_contents_hash,
         gateway_eth_address,
         filenode_eth_address,
       ));
@@ -286,13 +288,13 @@ pub mod pallet {
     }
 
     #[pallet::weight((0, Pays::No))]
-    pub fn delete(origin: OriginFor<T>, 
-      user_eth_address: Vec<u8>, 
+    pub fn delete(origin: OriginFor<T>,
+      user_eth_address: Vec<u8>,
       file_name_hash: Vec<u8>,
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
 
-      let has_permission = 
+      let has_permission =
         // is admin
         sender == Self::key()
         ||
@@ -307,8 +309,8 @@ pub mod pallet {
       // TODO total_file_count, total_file_size
 
       Self::deposit_event(Event::Delete(
-        user_eth_address, 
-        file_name_hash, 
+        user_eth_address,
+        file_name_hash,
         filenode_eth_address
       ));
       Ok(().into())
@@ -320,7 +322,7 @@ pub mod pallet {
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
 
-      let has_permission = 
+      let has_permission =
         // is admin
         sender == Self::key()
         ||
@@ -354,7 +356,7 @@ pub mod pallet {
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
 
-      let has_permission = 
+      let has_permission =
         // is admin
         sender == Self::key()
         ||
@@ -378,13 +380,13 @@ pub mod pallet {
 
     #[pallet::weight((0, Pays::No))]
     pub fn transfer(origin: OriginFor<T>,
-      from: Vec<u8>, 
-      to: Vec<u8>, 
+      from: Vec<u8>,
+      to: Vec<u8>,
       value: u128,
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
 
-      let has_permission = 
+      let has_permission =
         // is admin
         sender == Self::key()
         ||
@@ -415,7 +417,7 @@ pub mod pallet {
 
     #[pallet::weight((0, Pays::No))]
     pub fn grant_file_permission(origin: OriginFor<T>,
-      eth_address: Vec<u8>, 
+      eth_address: Vec<u8>,
       account_id: T::AccountId,
       node_url: Vec<u8>,
     ) -> DispatchResultWithPostInfo {
@@ -437,7 +439,7 @@ pub mod pallet {
 
     #[pallet::weight((0, Pays::No))]
     pub fn grant_billing_permission(origin: OriginFor<T>,
-      eth_address: Vec<u8>, 
+      eth_address: Vec<u8>,
       account_id: T::AccountId,
       node_url: Vec<u8>,
     ) -> DispatchResultWithPostInfo {
@@ -459,12 +461,12 @@ pub mod pallet {
 
     #[pallet::weight((0, Pays::No))]
     pub fn revoke_file_permission(origin: OriginFor<T>,
-      eth_address: Vec<u8>, 
+      eth_address: Vec<u8>,
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
       ensure!(sender == Self::key(), Error::<T>::Unauthorized);
       ensure!(eth_address.len() == 20, Error::<T>::InvalidArguments);
-      ensure!(FilePermissionOwnersByETHAddress::<T>::contains_key(&eth_address), 
+      ensure!(FilePermissionOwnersByETHAddress::<T>::contains_key(&eth_address),
                                         Error::<T>::InvalidArguments);
       let account_id = FilePermissionOwnersByETHAddress::<T>::take(&eth_address);
       FilePermissionOwnersByAccountId::<T>::take(&account_id);
@@ -474,12 +476,12 @@ pub mod pallet {
 
     #[pallet::weight((0, Pays::No))]
     pub fn revoke_billing_permission(origin: OriginFor<T>,
-      eth_address: Vec<u8>, 
+      eth_address: Vec<u8>,
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
       ensure!(sender == Self::key(), Error::<T>::Unauthorized);
       ensure!(eth_address.len() == 20, Error::<T>::InvalidArguments);
-      ensure!(BillingPermissionOwnersByETHAddress::<T>::contains_key(&eth_address), 
+      ensure!(BillingPermissionOwnersByETHAddress::<T>::contains_key(&eth_address),
                                         Error::<T>::InvalidArguments);
       let account_id = BillingPermissionOwnersByETHAddress::<T>::take(&eth_address);
       BillingPermissionOwnersByAccountId::<T>::take(&account_id);
@@ -489,7 +491,7 @@ pub mod pallet {
 
     #[pallet::weight((0, Pays::No))]
     pub fn register_gateway_node(origin: OriginFor<T>,
-      eth_address: Vec<u8>, 
+      eth_address: Vec<u8>,
       seed_eth_address: Option<Vec<u8>>,
       storage: u8,
       node_url: Vec<u8>,
