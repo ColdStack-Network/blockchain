@@ -223,15 +223,17 @@ pub mod pallet {
         FilePermissionOwnersByAccountId::<T>::contains_key(&sender);
 
       let filenode_eth_address = FilePermissionOwnersByAccountId::<T>::get(&sender);
- 
+
       ensure!(has_permission, Error::<T>::Unauthorized);
 
       ensure!(user_eth_address.len() == 20, Error::<T>::InvalidArguments);
       ensure!(gateway_eth_address.len() == 20, Error::<T>::InvalidArguments);
       ensure!(file_contents_hash.len() == 32, Error::<T>::InvalidArguments);
       ensure!(file_name_hash.len() == 32, Error::<T>::InvalidArguments);
+	  ensure!(u8::MIN <= file_storage_class && file_storage_class <= u8::MAX, Error::<T>::InvalidArguments);
+	  ensure!(is_forced == false || is_froced == true, Error::<T>::InvalidArguments);
 
-      <TotalFileCount<T>>::put(Self::total_file_count() + 1);
+	  <TotalFileCount<T>>::put(Self::total_file_count() + 1);
       <TotalFileSize<T>>::put(Self::total_file_size() + file_size_bytes);
 
       Self::deposit_event(Event::Upload(
