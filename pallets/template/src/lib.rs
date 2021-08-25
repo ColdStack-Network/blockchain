@@ -231,7 +231,7 @@ pub mod pallet {
       ensure!(file_contents_hash.len() == 32, Error::<T>::InvalidArguments);
       ensure!(file_name_hash.len() == 32, Error::<T>::InvalidArguments);
 	  ensure!(u8::MIN <= file_storage_class && file_storage_class <= u8::MAX, Error::<T>::InvalidArguments);
-	  ensure!(is_forced == false || is_froced == true, Error::<T>::InvalidArguments);
+	  ensure!(is_forced == false || is_forced == true, Error::<T>::InvalidArguments);
 
 	  <TotalFileCount<T>>::put(Self::total_file_count() + 1);
       <TotalFileSize<T>>::put(Self::total_file_size() + file_size_bytes);
