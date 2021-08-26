@@ -112,6 +112,7 @@ pub mod pallet {
     address: Vec<u8>,
     seed_address: Option<Vec<u8>>,
     storage: u8,
+	  is_active: bool
   }
 
   /*
@@ -167,6 +168,10 @@ pub mod pallet {
 	  /*file_storage_class:*/u8,
 	  /*is_forced:*/bool,
     ),
+	  change_status_gateway(
+	/*gateway_eth_address*/				Vec<u8>,
+	/*is_active*/				bool
+	),
     Download(
       /*user_eth_address*/     Vec<u8>,
       /*file_name_hash:*/      Vec<u8>,
@@ -187,7 +192,7 @@ pub mod pallet {
     FilePermissionRevoked(Vec<u8>, T::AccountId),
     BillingPermissionGranted(Vec<u8>, T::AccountId, Vec<u8>),
     BillingPermissionRevoked(Vec<u8>, T::AccountId),
-    GatewayNodeRegistered(Vec<u8>, Option<Vec<u8>>, u8, Vec<u8>),
+    GatewayNodeRegistered(Vec<u8>, Option<Vec<u8>>, u8, Vec<u8>, bool),
   }
 
   #[pallet::error]
@@ -249,7 +254,28 @@ pub mod pallet {
 
       Ok(().into())
     }
+	  #[pallet::weight((0, Pays::No))]
+	  pub fn change_status_gateway(origin: OriginFor<T>,
+					gateway_eth_address: Vec<u8>,
+					is_active: bool,
+	  ) -> DispatchResultWithPostInfo {
+		  let sender = ensure_signed(origin)?;
 
+		  let has_permission =
+			  // is admin
+			  sender == Self::key()
+				  ||
+				  FilePermissionOwnersByAccountId::<T>::contains_key(&sender);
+		  ensure!(gateway_eth_address.len() == 20, Error::<T>::InvalidArguments);
+		  ensure!(has_permission, Error::<T>::Unauthorized);
+		  ensure!(is_active == false || is_active == true, Error::<T>::InvalidArguments);
+		  Self::deposit_event(Event::change_status_gateway(
+			  gateway_eth_address,
+			  is_active
+		  ));
+
+		  Ok(().into())
+	  }
     #[pallet::weight((0, Pays::No))]
     pub fn download(origin: OriginFor<T>,
       user_eth_address: Vec<u8>,
@@ -495,6 +521,7 @@ pub mod pallet {
       seed_eth_address: Option<Vec<u8>>,
       storage: u8,
       node_url: Vec<u8>,
+		is_active:bool
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
       ensure!(sender == Self::key(), Error::<T>::Unauthorized);
@@ -506,6 +533,7 @@ pub mod pallet {
         address: eth_address.clone(),
         seed_address: seed_eth_address.clone(),
         storage: storage,
+		  is_active:is_active
       };
       Gateways::<T>::insert(eth_address.clone(), &gateway);
       NodeURLs::<T>::insert(eth_address.clone(), &node_url);
@@ -514,6 +542,7 @@ pub mod pallet {
         seed_eth_address,
         storage,
         node_url,
+		  is_active
       ));
       Ok(().into())
     }
