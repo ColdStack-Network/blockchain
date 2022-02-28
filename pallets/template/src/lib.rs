@@ -112,7 +112,7 @@ pub mod pallet {
     address: Vec<u8>,
     seed_address: Option<Vec<u8>>,
     storage: u8,
-	  is_active: bool
+	is_active: bool
   }
 
   /*
@@ -168,9 +168,12 @@ pub mod pallet {
 	  /*file_storage_class:*/u8,
 	  /*is_forced:*/bool,
     ),
-	  change_status_gateway(
+	ChangeStatusGateway(
 	/*gateway_eth_address*/				Vec<u8>,
 	/*is_active*/				bool
+	),
+	DeleteGateway(
+		/*gateway_eth_address*/				Vec<u8>,
 	),
     Download(
       /*user_eth_address*/     Vec<u8>,
@@ -269,13 +272,49 @@ pub mod pallet {
 		  ensure!(gateway_eth_address.len() == 20, Error::<T>::InvalidArguments);
 		  ensure!(has_permission, Error::<T>::Unauthorized);
 		  ensure!(is_active == false || is_active == true, Error::<T>::InvalidArguments);
-		  Self::deposit_event(Event::change_status_gateway(
+		  let gateway = Gateways::<T>::get(gateway_eth_address.clone());
+
+		  let g = Gateway {
+			  address:gateway_eth_address.clone(),
+			  seed_address:gateway.seed_address,
+			  storage:gateway.storage,
+			  is_active:is_active
+
+		  };
+		  Gateways::<T>::remove(gateway_eth_address.clone());
+		  Gateways::<T>::insert(gateway_eth_address.clone(), &g);
+		  Self::deposit_event(Event::ChangeStatusGateway(
 			  gateway_eth_address,
 			  is_active
 		  ));
 
 		  Ok(().into())
 	  }
+
+	  #[pallet::weight((0, Pays::No))]
+	  pub fn delete_gateway(origin: OriginFor<T>,
+								   gateway_eth_address: Vec<u8>,
+	  ) -> DispatchResultWithPostInfo {
+		  let sender = ensure_signed(origin)?;
+
+		  let has_permission =
+			  // is admin
+			  sender == Self::key()
+				  ||
+				  FilePermissionOwnersByAccountId::<T>::contains_key(&sender);
+		  ensure!(gateway_eth_address.len() == 20, Error::<T>::InvalidArguments);
+		  ensure!(has_permission, Error::<T>::Unauthorized);
+
+		  Gateways::<T>::remove(gateway_eth_address.clone());
+		  NodeURLs::<T>::remove(gateway_eth_address.clone());
+		  Self::deposit_event(Event::DeleteGateway(
+			  gateway_eth_address
+		  ));
+
+		  Ok(().into())
+	  }
+
+
     #[pallet::weight((0, Pays::No))]
     pub fn download(origin: OriginFor<T>,
       user_eth_address: Vec<u8>,
@@ -533,7 +572,7 @@ pub mod pallet {
         address: eth_address.clone(),
         seed_address: seed_eth_address.clone(),
         storage: storage,
-		  is_active:is_active
+		is_active:is_active
       };
       Gateways::<T>::insert(eth_address.clone(), &gateway);
       NodeURLs::<T>::insert(eth_address.clone(), &node_url);
