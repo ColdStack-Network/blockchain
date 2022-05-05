@@ -596,7 +596,7 @@ pub mod pallet {
     #[pallet::weight((0, Pays::No))]
     pub fn reward_staking(origin: OriginFor<T>,
       from: Vec<u8>,
-      to: Vec<u8>,
+      account: Vec<u8>,
       value: u128,
     ) -> DispatchResultWithPostInfo {
       let sender = ensure_signed(origin)?;
@@ -609,24 +609,23 @@ pub mod pallet {
 
       ensure!(has_permission, Error::<T>::Unauthorized);
 
-      ensure!(from.len() == 20, Error::<T>::InvalidArguments);
-      ensure!(to.len() == 20, Error::<T>::InvalidArguments);
+      ensure!(account.len() == 20, Error::<T>::InvalidArguments);
 
-      ensure!(Balances::<T>::contains_key(&from), Error::<T>::InsufficientFunds);
-      let balance = Balances::<T>::get(&from);
-      ensure!(balance >= value, Error::<T>::InsufficientFunds);
-      Balances::<T>::insert(&from, balance - value);
+      let locked_funds = LockedFunds::<T>::get();
 
-      if !Balances::<T>::contains_key(&to) {
-        Balances::<T>::insert(&to, value);
+      ensure!(locked_funds >= value, Error::<T>::InsufficientIssuance);
+
+      if !Balances::<T>::contains_key(&account) {
+        Balances::<T>::insert(&account, value);
       } else {
-        let balance = Balances::<T>::get(&to);
-        // `balance + value` cannot overflow because it always less than
-        // total_issuance
-        Balances::<T>::insert(&to, balance + value);
+        let current_balance = Balances::<T>::get(&account);
+        // `current_balance + value` cannot overflow because it cannot be
+        // greater than total_issuance
+        Balances::<T>::insert(&account, current_balance + value);
       }
-
-      Self::deposit_event(Event::RewardStaking(from, to, value));
+      // `locked_funds` is more than `value` (see check earlier)
+      LockedFunds::<T>::put(locked_funds - value);
+      Self::deposit_event(Event::RewardStaking(from, account, value));
       Ok(().into())
     }
 
